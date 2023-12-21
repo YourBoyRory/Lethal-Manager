@@ -37,7 +37,7 @@ public class BepinexUpdater {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return null;
     }
@@ -50,7 +50,7 @@ public class BepinexUpdater {
                 Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.getMessage();
         }
     }
 
@@ -78,12 +78,12 @@ public class BepinexUpdater {
                             out.write(buffer, 0, len);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        e.getMessage();
                     }
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
     }
 

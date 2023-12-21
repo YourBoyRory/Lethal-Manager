@@ -22,7 +22,7 @@ public class LCMMConfig {
             propertiesFile.setProperty("gameFolder", gameFolder);
             propertiesFile.store(configDOS, LCMM.VERSION_STRING);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
     }
 

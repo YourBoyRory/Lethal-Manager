@@ -6,15 +6,16 @@ import java.io.*;
 import java.util.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
+import java.net.*;
 
-
-public class LCMMFrame extends JFrame implements ActionListener, DocumentListener, DropTargetListener {
+public class LCMMFrame extends JFrame implements MouseListener, ActionListener, DocumentListener, DropTargetListener {
 
     JLabel msgLabel;
     JList<String> listBox;
     DefaultListModel<String> list;
 
     LCMMConfig config;
+    ModHandler modHandler;
 
     // File
     DataInputStream dis;
@@ -33,10 +34,13 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
 
     //Menu bar
     JMenuBar menuBar;
+    JMenu editSubMenu;
     JMenu optionsSubMenu;
+    JMenu helpSubMenu;
 
     LCMMFrame(){ //Constuctor
         config = new LCMMConfig();
+        modHandler = new ModHandler(config);
         JPanel topPanel; // Menu
 
         JScrollPane listBoxScrollPane; // List
@@ -58,6 +62,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         // list Box
         list = new DefaultListModel();
         listBox = new JList(list);
+        listBox.addMouseListener(this);
         listBoxScrollPane = new JScrollPane(listBox);
         add(listBoxScrollPane, BorderLayout.CENTER);
 
@@ -107,18 +112,42 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         }
     }
 
+    private void openContextMenu(int Xcord, int Ycord) {
+        JPopupMenu popup;
+        JMenuItem item;
+
+        popup = new JPopupMenu();
+        item = new JMenuItem("Uninstall " + listBox.getSelectedValue());
+        item.addActionListener(this);
+        item.setActionCommand("UNINSTALL");
+        popup.add(item);
+        popup.show(this, Xcord, Ycord);
+    }
+
     private JMenuBar newMenuBar() {
         menuBar = new JMenuBar();
+
+        editSubMenu = new JMenu("Edit");
+        editSubMenu.setMnemonic('E');
+        editSubMenu.add(newItem("Install Mod", "INSTALL", this, KeyEvent.VK_I, KeyEvent.VK_I, "Install a mod."));
+        editSubMenu.add(newItem("Uninstall Mod", "UNINSTALL", this, KeyEvent.VK_U, KeyEvent.VK_U, "Uninstall selected mod."));
+        editSubMenu.add(newItem("Refresh List", "REFRESH", this, KeyEvent.VK_R, KeyEvent.VK_R, "Refresh the mod list."));
+        menuBar.add(editSubMenu);
 
         // Edit
         optionsSubMenu = new JMenu("Options");
         optionsSubMenu.setMnemonic('O');
-        optionsSubMenu.add(newItem("Install Mod", "INSTALL", this, KeyEvent.VK_I, KeyEvent.VK_I, "Install a mod."));
-        optionsSubMenu.add(newItem("Refresh List", "REFRESH", this, KeyEvent.VK_R, KeyEvent.VK_R, "Refresh the mod list."));
         optionsSubMenu.add(newItem("Update BepInEx", "UPDATE", this, KeyEvent.VK_B, KeyEvent.VK_B, "Download and Install the latest BepInEx."));
+        optionsSubMenu.add(newItem("Open Game Directroy", "OPEN", this, KeyEvent.VK_O, KeyEvent.VK_O, "Open the directroy your game and mods are installed."));
         optionsSubMenu.add(newItem("Set Game Directroy", "SET", this, KeyEvent.VK_G, KeyEvent.VK_G, "Set the directroy your game and mods are installed."));
-        optionsSubMenu.add(newItem("About", "ABOUT", this, KeyEvent.VK_A, KeyEvent.VK_A, "Product Infomration."));
         menuBar.add(optionsSubMenu);
+
+        helpSubMenu = new JMenu("Help");
+        helpSubMenu.setMnemonic('H');
+        helpSubMenu.add(newItem("Download Mods", "DOWNLOAD", this, KeyEvent.VK_D, KeyEvent.VK_D, "Download mods from thunderstore.io"));
+        helpSubMenu.add(newItem("Troubleshooting", "TROUBLE", this, KeyEvent.VK_T, KeyEvent.VK_T, "Common issues and how to fix them"));
+        helpSubMenu.add(newItem("About", "ABOUT", this, KeyEvent.VK_A, KeyEvent.VK_A, "Product Infomration."));
+        menuBar.add(helpSubMenu);
 
         return menuBar;
 
@@ -229,7 +258,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                     if (validateAction("install the mod(s)")) {
                         // User selected a file
                         java.io.File selectedFile = fileChooser.getSelectedFile();
-                        new ModInstaller(selectedFile, config);
+                        modHandler.install(selectedFile);
                         refreshList();
                     }
                 }
@@ -246,6 +275,31 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
             case "ABOUT":
                 JOptionPane.showInternalMessageDialog(null, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\n Justin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
                 break;
+            case "UNINSTALL":
+                if (listBox.getSelectedValue() != null) {
+                    modHandler.uninstall(listBox.getSelectedValue());
+                    refreshList();
+                }
+                break;
+            case "DOWNLOAD":
+                openDownload();
+                break;
+            case "TROUBLE":
+                JOptionPane.showInternalMessageDialog(null, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directroy make sure BepInEx is up to date\nby installing in through Options > Update BepInEx \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to yout games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
+                break;
+        }
+    }
+
+
+    private static void openDownload() {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI("https://thunderstore.io/c/lethal-company/"));
+            } catch (Exception e) {
+                e.getMessage();
+            }
+        } else {
+            System.out.println("Desktop browsing is not supported on this platform.");
         }
     }
 
@@ -270,11 +324,11 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                     java.util.List<File> files = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
                     for (File file : files) {
                         // Process the dropped file(s) as needed
-                        new ModInstaller(file, config);
+                        modHandler.install(file);
                     }
                     dtde.dropComplete(true);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    e.getMessage();
                     dtde.dropComplete(false);
                 }
             } else {
@@ -283,5 +337,15 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
             refreshList();
         }
     }
+
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        if(e.getButton() == e.BUTTON3 && listBox.getSelectedValue() != null) {
+            openContextMenu(e.getX(), e.getY());
+        }
+    } // end mouseClicked()
 
 }

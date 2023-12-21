@@ -1,25 +1,25 @@
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
+import java.nio.file.*;
 
 
-public class ModInstaller {
+public class ModHandler {
 
     LCMMConfig config;
 
-    ModInstaller(File inFile, LCMMConfig config){
+    ModHandler(LCMMConfig config){
         this.config = config;
-        handelFile(inFile);
     }
 
-    void handelFile(File inFile) {
+    void install(File inFile) {
         File entryDestination;
 
         try (ZipFile zip = new ZipFile(inFile)) {
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                entryDestination = fileDestination(entry.getName());
+                entryDestination = getDestination(entry.getName());
                 // Create parent directories if they do not exist
                 if (!entry.isDirectory()) {
                     new File(entryDestination.getParent()).mkdirs();
@@ -35,12 +35,12 @@ public class ModInstaller {
                             out.write(buffer, 0, len);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        e.getMessage();
                     }
                 }
             }
         } catch (ZipException ze) {
-            entryDestination = fileDestination(inFile.getName());
+            entryDestination = getDestination(inFile.getName());
 
             // Create the parent directories if they don't exist
             if (!entryDestination.getParentFile().exists()) {
@@ -59,14 +59,23 @@ public class ModInstaller {
                     outputStream.write(buffer, 0, bytesRead);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                e.getMessage();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
     }
 
-    File fileDestination(String str) {
+    void uninstall(String modName) {
+        Path path = Paths.get(config.pluginsFolder + File.separator + modName);
+        try {
+            Files.delete(path);
+        } catch (IOException ioe) {
+            ioe.getMessage();
+        }
+    }
+
+    File getDestination(String str) {
         if (!str.contains(File.separator)) {
             if (str.toUpperCase().contains(".DLL")) {
                 return new File(config.pluginsFolder, str);
