@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
@@ -60,26 +59,6 @@ public class LCMMConfig {
         } else if (!modLoaderCore.exists() || !modLoaderWinhtpp.exists()) {
             modloaderFound = false;
         }
-    }
-
-    public boolean validateAction(String action) {
-        int result;
-        if (gameFound == false) {
-            result = JOptionPane.showInternalConfirmDialog(null, "The game does not appear to be installed in the selected folder.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (modloaderFound == false) {
-            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
     }
 
     private String getPlatformDefault() {

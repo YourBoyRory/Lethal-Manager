@@ -140,7 +140,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         String osName = System.getProperty("os.name");
         boolean modLoaderTruth = config.modloaderFound;
         config.modloaderFound = true;
-        if (config.validateAction("install BepInEx")) {
+        if (validateAction("install BepInEx")) {
             config.modloaderFound = modLoaderTruth;
             new BepinexUpdater(config);
             verifyFiles();
@@ -179,7 +179,6 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
     void verifyFiles() {
         int result;
         config.verifyFiles();
-
         if (!config.gameFound) {
             result = JOptionPane.showInternalConfirmDialog(null, "Unable to locate game!\nPlease specify game install location.", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -197,6 +196,26 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         }
     }
 
+    boolean validateAction(String action) {
+        int result;
+        if (!config.gameFound) {
+            result = JOptionPane.showInternalConfirmDialog(null, "The game does not appear to be installed in the selected folder.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (!config.modloaderFound) {
+            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
     //ActionListener
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
@@ -204,7 +223,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                 final JFileChooser fileChooser = new JFileChooser();
                 int result = fileChooser.showOpenDialog(this);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    if (config.validateAction("install the mod(s)")) {
+                    if (validateAction("install the mod(s)")) {
                         // User selected a file
                         java.io.File selectedFile = fileChooser.getSelectedFile();
                         new ModInstaller(selectedFile, config);
@@ -238,7 +257,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
     public void dropActionChanged(DropTargetDragEvent dtde) {}
     public void dragExit(DropTargetEvent dte) {}
     public void drop(DropTargetDropEvent dtde) {
-        if (config.validateAction("install the mod(s)")) {
+        if (validateAction("install the mod(s)")) {
             // Handle drop events
             Transferable transferable = dtde.getTransferable();
 
