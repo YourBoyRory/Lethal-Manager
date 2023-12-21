@@ -287,11 +287,14 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
             case "TROUBLE":
                 JOptionPane.showInternalMessageDialog(null, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directroy make sure BepInEx is up to date\nby installing in through Options > Update BepInEx \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to yout games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
                 break;
+            case "OPEN":
+                openGameFolder();
+                break;
         }
     }
 
 
-    private static void openDownload() {
+    void openDownload() {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
                 Desktop.getDesktop().browse(new URI("https://thunderstore.io/c/lethal-company/"));
@@ -300,6 +303,24 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
             }
         } else {
             System.out.println("Desktop browsing is not supported on this platform.");
+        }
+    }
+
+    void openGameFolder() {
+        try {
+            // Create a File object for the specified directory
+            File directory = new File(config.gameFolder);
+            // Check if the directory exists
+            if (directory.exists()) {
+                // Get the Desktop instance
+                Desktop desktop = Desktop.getDesktop();
+                // Open the directory using the default file manager
+                desktop.open(directory);
+            } else {
+                verifyFiles();
+            }
+        } catch (Exception e) {
+            e.getMessage();
         }
     }
 
