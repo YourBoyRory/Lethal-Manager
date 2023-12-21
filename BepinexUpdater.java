@@ -53,7 +53,7 @@ public class BepinexUpdater {
         try {
             URL url = new URL(fileUrl);
             try (InputStream in = url.openStream()) {
-                Path destination = Path.of(fileDestination);
+                Path destination = Paths.get(fileDestination);
                 Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (Exception e) {
