@@ -1,25 +1,18 @@
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
-import java.util.zip.*;
 import java.util.zip.*;
 import java.nio.file.*;
 
 public class BepinexUpdater {
 
-    String gameFolder;
+    LCMMConfig config;
 
-    BepinexUpdater(String gameFolder){
-        this.gameFolder = gameFolder;
+    BepinexUpdater(LCMMConfig config){
+        this.config = config;
         String latestURL = getLatestURL();
-        downloadFile(latestURL, gameFolder +  File.separator + "BepInEx.zip");
-        File latestFile = new File(gameFolder +  File.separator + "BepInEx.zip");
+        downloadFile(latestURL, config.gameFolder +  File.separator + "BepInEx.zip");
+        File latestFile = new File(config.gameFolder +  File.separator + "BepInEx.zip");
         install(latestFile);
     }
 

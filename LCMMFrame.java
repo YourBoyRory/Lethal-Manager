@@ -4,12 +4,8 @@ import javax.swing.event.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import java.net.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
-import java.util.zip.*;
-import java.util.zip.*;
-import java.nio.file.*;
 
 
 public class LCMMFrame extends JFrame implements ActionListener, DocumentListener, DropTargetListener {
@@ -18,11 +14,12 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
     JList<String> listBox;
     DefaultListModel<String> list;
 
+    LCMMConfig config;
+
     // File
     DataInputStream dis;
     File myFile;
 
-    URL url;
     InputStreamReader isr;
     String urlString;
     BufferedReader pageReader;
@@ -38,19 +35,8 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
     JMenuBar menuBar;
     JMenu optionsSubMenu;
 
-    String verString = "Lethal Manager v0.1.0";
-    boolean gameFound;
-    boolean modloaderFound;
-
-    // Locations
-    String configPath = System.getProperty("user.home") + File.separator + ".lcmm.dat";
-    String gameFolder;
-    String bepinexFolder;
-    String pluginsFolder;
-
     LCMMFrame(){ //Constuctor
-        loadConfig();
-
+        config = new LCMMConfig();
         JPanel topPanel; // Menu
 
         JScrollPane listBoxScrollPane; // List
@@ -105,7 +91,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
 
     void refreshList() {
         list.clear();
-        File directory = new File(pluginsFolder);
+        File directory = new File(config.pluginsFolder);
         if (directory.isDirectory()) {
             // Get the list of files in the directory
             modList = directory.listFiles();
@@ -150,111 +136,15 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         return m;
     } // end newItem()
 
-    void saveConfig() {
-        try {
-            DataOutputStream configDOS = new DataOutputStream(new FileOutputStream(configPath));
-            Properties propertiesFile = new Properties();
-
-            propertiesFile.setProperty("gameFolder", gameFolder);
-            propertiesFile.store(configDOS, verString);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    void loadConfig() {
-        try {
-            DataInputStream configDIS = new DataInputStream(new FileInputStream(configPath)); // makes a dis using the passed file
-            Properties propertiesFile = new Properties();
-            propertiesFile.load(configDIS);
-            gameFolder = propertiesFile.getProperty("gameFolder");
-        } catch (IOException ioe) {
-            gameFolder = getPlatformDefault();
-            saveConfig();
-        }
-        bepinexFolder = gameFolder + File.separator + "BepInEx";
-        pluginsFolder = bepinexFolder + File.separator  + "plugins";
-    }
-
-    void setGameFolder() {
-
-        final JFileChooser fileChooser = new JFileChooser();
-        int result;
-
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        File initialDirectory = new File(gameFolder);
-        fileChooser.setCurrentDirectory(initialDirectory);
-        result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            // User selected a file
-            java.io.File selectedFile = fileChooser.getSelectedFile();
-            gameFolder = selectedFile.getAbsolutePath();
-            bepinexFolder = gameFolder + File.separator + "BepInEx";
-            pluginsFolder = bepinexFolder + File.separator  + "plugins";
-            refreshList();
-            saveConfig();
-        }
-        verifyFiles();
-    }
-
-    void verifyFiles() {
-        File modLoaderCore = new File(bepinexFolder + File.separator + "core");
-        File modLoaderWinhtpp = new File(gameFolder + File.separator + "winhttp.dll");
-        File gameDirectory = new File(gameFolder + File.separator + "Lethal Company.exe");
-        int result;
-        gameFound = true;
-        modloaderFound = true;
-
-
-        if (!gameDirectory.exists()) {
-            gameFound = false;
-            result = JOptionPane.showInternalConfirmDialog(null, "Unable to locate game!\nPlease specify game install location.", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                setGameFolder();
-            } else {
-                //System.exit(0);
-            }
-        } else if (!modLoaderCore.exists() || !modLoaderWinhtpp.exists()) {
-            modloaderFound = false;
-            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed, This will be needed to run mods.\nWould you like to installed BepInEx now?", "Install BepInEx?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                updateBepinex();
-            } else {
-                //System.exit(0);
-            }
-        }
-    }
-
-    boolean validateAction(String action) {
-        int result;
-        if (gameFound == false) {
-            result = JOptionPane.showInternalConfirmDialog(null, "The game does not appear to be installed in the selected folder.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if (modloaderFound == false && gameFound == true) {
-            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
     void updateBepinex() {
         String osName = System.getProperty("os.name");
-        boolean modLoaderTruth = modloaderFound;
-        modloaderFound = true;
-        if (validateAction("install BepInEx")) {
-            modloaderFound = modLoaderTruth;
-            new BepinexUpdater(gameFolder);
+        boolean modLoaderTruth = config.modloaderFound;
+        config.modloaderFound = true;
+        if (config.validateAction("install BepInEx")) {
+            config.modloaderFound = modLoaderTruth;
+            new BepinexUpdater(config);
             verifyFiles();
-            if (modloaderFound == true) {
+            if (config.modloaderFound == true) {
                 if (osName.startsWith("Linux")) {
                     JOptionPane.showInternalMessageDialog(null, "Latest BepInEx Installed\nYou will need to add the following line to your games launch options\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "BepInEx Installed", JOptionPane.INFORMATION_MESSAGE);
                 } else {
@@ -264,7 +154,46 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                 JOptionPane.showInternalMessageDialog(null, "BepInEx Failed To Installed", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         } else {
-            modloaderFound = modLoaderTruth;
+            config.modloaderFound = modLoaderTruth;
+        }
+    }
+
+    void setGameFolder() {
+
+        final JFileChooser fileChooser = new JFileChooser();
+        int result;
+
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        File initialDirectory = new File(config.gameFolder);
+        fileChooser.setCurrentDirectory(initialDirectory);
+        result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            // User selected a file
+            java.io.File selectedFile = fileChooser.getSelectedFile();
+            config.setGameFolder(selectedFile);
+            refreshList();
+        }
+        verifyFiles();
+    }
+
+    void verifyFiles() {
+        int result;
+        config.verifyFiles();
+
+        if (!config.gameFound) {
+            result = JOptionPane.showInternalConfirmDialog(null, "Unable to locate game!\nPlease specify game install location.", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                setGameFolder();
+            } else {
+                //System.exit(0);
+            }
+        } else if (!config.modloaderFound) {
+            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed, This will be needed to run mods.\nWould you like to installed BepInEx now?", "Install BepInEx?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                updateBepinex();
+            } else {
+                //System.exit(0);
+            }
         }
     }
 
@@ -275,10 +204,10 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                 final JFileChooser fileChooser = new JFileChooser();
                 int result = fileChooser.showOpenDialog(this);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    if (validateAction("install the mod(s)")) {
+                    if (config.validateAction("install the mod(s)")) {
                         // User selected a file
                         java.io.File selectedFile = fileChooser.getSelectedFile();
-                        new ModInstaller(selectedFile, gameFolder);
+                        new ModInstaller(selectedFile, config);
                         refreshList();
                     }
                 }
@@ -293,20 +222,8 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                 setGameFolder();
                 break;
             case "ABOUT":
-                JOptionPane.showInternalMessageDialog(null, "\n" + verString + "\n\nRory - Progammer and UI Design\n Justin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showInternalMessageDialog(null, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\n Justin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
                 break;
-        }
-    }
-
-    String getPlatformDefault() {
-        String osName = System.getProperty("os.name");
-        // You can perform further actions based on the detected OS
-        if (osName.startsWith("Windows")) {
-            return "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company";
-        } else if (osName.startsWith("Linux")) {
-            return System.getProperty("user.home") + "/.steam/steam/steamapps/common/Lethal Company";
-        } else {
-            return null;
         }
     }
 
@@ -321,7 +238,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
     public void dropActionChanged(DropTargetDragEvent dtde) {}
     public void dragExit(DropTargetEvent dte) {}
     public void drop(DropTargetDropEvent dtde) {
-        if (validateAction("install the mod(s)")) {
+        if (config.validateAction("install the mod(s)")) {
             // Handle drop events
             Transferable transferable = dtde.getTransferable();
 
@@ -331,7 +248,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
                     java.util.List<File> files = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
                     for (File file : files) {
                         // Process the dropped file(s) as needed
-                        new ModInstaller(file, gameFolder);
+                        new ModInstaller(file, config);
                     }
                     dtde.dropComplete(true);
                 } catch (Exception e) {

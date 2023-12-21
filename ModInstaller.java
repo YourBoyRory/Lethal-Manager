@@ -1,26 +1,14 @@
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import java.net.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
 import java.util.zip.*;
-import java.util.zip.*;
-import java.nio.file.*;
+
 
 public class ModInstaller {
 
-    String gameFolder;
-    String bepinexFolder;
-    String pluginsFolder;
+    LCMMConfig config;
 
-    ModInstaller(File inFile, String gameFolder){
-        this.gameFolder = gameFolder;
-        bepinexFolder = gameFolder + File.separator + "BepInEx";
-        pluginsFolder = bepinexFolder + File.separator  + "plugins";
+    ModInstaller(File inFile, LCMMConfig config){
+        this.config = config;
         handelFile(inFile);
     }
 
@@ -81,14 +69,14 @@ public class ModInstaller {
     File fileDestination(String str) {
         if (!str.contains(File.separator)) {
             if (str.toUpperCase().contains(".DLL")) {
-                return new File(pluginsFolder, str);
+                return new File(config.pluginsFolder, str);
             } else {
-                return new File(bepinexFolder, str);
+                return new File(config.bepinexFolder, str);
             }
         } else if (str.toUpperCase().startsWith("BEPINEX" + File.separator)) {
-            return new File(gameFolder, str);
+            return new File(config.gameFolder, str);
         } else {
-            return new File(bepinexFolder, str);
+            return new File(config.bepinexFolder, str);
         }
     }
 
