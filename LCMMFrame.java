@@ -370,11 +370,10 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         String osName = System.getProperty("os.name");
         // You can perform further actions based on the detected OS
         if (osName.startsWith("Windows")) {
-            return "C:\\Program Files\\Steam\\steamapps\\common\\Lethal Company";
+            return "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company";
         } else if (osName.startsWith("Linux")) {
             return System.getProperty("user.home") + "/.steam/steam/steamapps/common/Lethal Company";
         } else {
-            System.out.println("Unknown operating system");
             return null;
         }
     }
