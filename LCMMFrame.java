@@ -136,6 +136,9 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         return m;
     } // end newItem()
 
+    // This is a gross function do not look at this function.
+    // There definitely a better way to do this but this is my way.
+    // And my way is special :)
     void updateBepinex() {
         String osName = System.getProperty("os.name");
         boolean modLoaderTruth = config.modloaderFound;
@@ -170,7 +173,7 @@ public class LCMMFrame extends JFrame implements ActionListener, DocumentListene
         if (result == JFileChooser.APPROVE_OPTION) {
             // User selected a file
             java.io.File selectedFile = fileChooser.getSelectedFile();
-            config.setGameFolder(selectedFile);
+            config.setGameFolder(selectedFile.getAbsolutePath());
             refreshList();
         }
         verifyFiles();

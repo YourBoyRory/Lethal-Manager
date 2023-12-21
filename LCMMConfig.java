@@ -31,17 +31,14 @@ public class LCMMConfig {
             DataInputStream configDIS = new DataInputStream(new FileInputStream(configPath)); // makes a dis using the passed file
             Properties propertiesFile = new Properties();
             propertiesFile.load(configDIS);
-            gameFolder = propertiesFile.getProperty("gameFolder");
+            setGameFolder(propertiesFile.getProperty("gameFolder"));
         } catch (IOException ioe) {
-            gameFolder = getPlatformDefault();
-            saveConfig();
+            setGameFolder(getPlatformDefault());
         }
-        bepinexFolder = gameFolder + File.separator + "BepInEx";
-        pluginsFolder = bepinexFolder + File.separator  + "plugins";
     }
 
-    public void setGameFolder(File newGameFolder) {
-        gameFolder = newGameFolder.getAbsolutePath();
+    public void setGameFolder(String newGameFolder) {
+        gameFolder = newGameFolder;
         bepinexFolder = gameFolder + File.separator + "BepInEx";
         pluginsFolder = bepinexFolder + File.separator  + "plugins";
         saveConfig();
