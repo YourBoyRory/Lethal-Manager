@@ -76,17 +76,21 @@ public class ModHandler {
     }
 
     File getDestination(String str) {
-        if (!str.contains(File.separator)) {
-            if (str.toUpperCase().contains(".DLL")) {
+        if (str.contains("/") || str.contains("\\")) {
+            if (str.trim().toUpperCase().startsWith("BEPINEX")) {
+                return new File(config.gameFolder, str);
+            } else {
+                return new File(config.bepinexFolder, str);
+            }
+        } else {
+            if (str.trim().toUpperCase().endsWith(".DLL")) {
                 return new File(config.pluginsFolder, str);
             } else {
                 return new File(config.bepinexFolder, str);
             }
-        } else if (str.toUpperCase().startsWith("BEPINEX" + File.separator)) {
-            return new File(config.gameFolder, str);
-        } else {
-            return new File(config.bepinexFolder, str);
         }
+
+
     }
 
 }

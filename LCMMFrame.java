@@ -91,6 +91,9 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
 
         setTitle("Lethal Manager");  // For the title bar
 
+        ImageIcon icon = new ImageIcon(LCMM.class.getClassLoader().getResource("icon.png"));
+        this.setIconImage(icon.getImage());
+
         setVisible(true);
     } // end of setupMainFrame()
 
@@ -273,7 +276,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 setGameFolder();
                 break;
             case "ABOUT":
-                JOptionPane.showInternalMessageDialog(null, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\n Justin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showInternalMessageDialog(null, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\nJustin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
                 break;
             case "UNINSTALL":
                 if (listBox.getSelectedValue() != null) {
@@ -285,7 +288,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 openDownload();
                 break;
             case "TROUBLE":
-                JOptionPane.showInternalMessageDialog(null, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directroy make sure BepInEx is up to date\nby installing in through Options > Update BepInEx \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to yout games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showInternalMessageDialog(null, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directory make sure BepInEx is up to date\nby installing in through [Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
                 break;
             case "OPEN":
                 openGameFolder();
