@@ -184,12 +184,12 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
             verifyFiles();
             if (config.modloaderFound == true) {
                 if (osName.startsWith("Linux")) {
-                    JOptionPane.showInternalMessageDialog(null, "Latest BepInEx Installed\nYou will need to add the following line to your games launch options\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "BepInEx Installed", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Latest BepInEx Installed\nYou will need to add the following line to your games launch options\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "BepInEx Installed", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showInternalMessageDialog(null, "Latest BepInEx Installed", "BepInEx Installed", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Latest BepInEx Installed", "BepInEx Installed", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                JOptionPane.showInternalMessageDialog(null, "BepInEx Failed To Installed", "Warning", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "BepInEx Failed To Installed", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         } else {
             config.modloaderFound = modLoaderTruth;
@@ -218,14 +218,14 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
         int result;
         config.verifyFiles();
         if (!config.gameFound) {
-            result = JOptionPane.showInternalConfirmDialog(null, "Unable to locate game!\nPlease specify game install location.", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+            result = JOptionPane.showConfirmDialog(this, "Unable to locate game!\nPlease specify game install location.", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
             if (result == JFileChooser.APPROVE_OPTION) {
                 setGameFolder();
             } else {
                 //System.exit(0);
             }
         } else if (!config.modloaderFound) {
-            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed, This will be needed to run mods.\nWould you like to installed BepInEx now?", "Install BepInEx?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            result = JOptionPane.showConfirmDialog(this, "BepInEx does not appear to be installed, This will be needed to run mods.\nWould you like to installed BepInEx now?", "Install BepInEx?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (result == JFileChooser.APPROVE_OPTION) {
                 updateBepinex();
             } else {
@@ -237,14 +237,14 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
     boolean validateAction(String action) {
         int result;
         if (!config.gameFound) {
-            result = JOptionPane.showInternalConfirmDialog(null, "The game does not appear to be installed in the selected folder.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            result = JOptionPane.showConfirmDialog(this, "The game does not appear to be installed in the selected folder.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (result == JFileChooser.APPROVE_OPTION) {
                 return true;
             } else {
                 return false;
             }
         } else if (!config.modloaderFound) {
-            result = JOptionPane.showInternalConfirmDialog(null, "BepInEx does not appear to be installed.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            result = JOptionPane.showConfirmDialog(this, "BepInEx does not appear to be installed.\nAre you sure you want to attempt to " + action + " anyways?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (result == JFileChooser.APPROVE_OPTION) {
                 return true;
             } else {
@@ -279,7 +279,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 setGameFolder();
                 break;
             case "ABOUT":
-                JOptionPane.showInternalMessageDialog(null, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\nJustin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(this, "\n" + LCMM.VERSION_STRING + "\n\nRory - Progammer and UI Design\nJustin - Platfrom tester and application icon designer", "About", JOptionPane.PLAIN_MESSAGE);
                 break;
             case "UNINSTALL":
                 if (listBox.getSelectedValue() != null) {
@@ -291,7 +291,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 openDownload();
                 break;
             case "TROUBLE":
-                JOptionPane.showInternalMessageDialog(null, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directory make sure BepInEx is up to date\nby installing in through [Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(this, "If your mods are not loading make sure the program is pointing that the games\ninstall directroy.\n\nIf you have confirmed the games install directory make sure BepInEx is up to date\nby installing in through [Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:\n\nWINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%", "Help", JOptionPane.PLAIN_MESSAGE);
                 break;
             case "OPEN":
                 openGameFolder();
