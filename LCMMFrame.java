@@ -109,7 +109,10 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 // Print the names of the files in the directory
 
                 for (File mod : modList) {
-                    list.add(list.getSize(), mod.getName());
+                    if (mod.getName().trim().toUpperCase().endsWith(".DLL")) {
+                        String modNameTrimmed = mod.getName().substring(0, mod.getName().lastIndexOf("."));
+                        list.add(list.getSize(), modNameTrimmed);
+                    }
                 }
             }
         }
