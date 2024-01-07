@@ -110,8 +110,8 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
 
                 for (File mod : modList) {
                     if (mod.getName().trim().toUpperCase().endsWith(".DLL")) {
-                        String modNameTrimmed = mod.getName().substring(0, mod.getName().lastIndexOf("."));
-                        list.add(list.getSize(), modNameTrimmed);
+                        //String modNameTrimmed = mod.getName().substring(0, mod.getName().lastIndexOf("."));
+                        list.add(list.getSize(), mod.getName());
                     }
                 }
             }
@@ -305,7 +305,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
             try {
                 Desktop.getDesktop().browse(new URI("https://thunderstore.io/c/lethal-company/"));
             } catch (Exception e) {
-                e.getMessage();
+                e.printStackTrace();;
             }
         } else {
             System.out.println("Desktop browsing is not supported on this platform.");
@@ -326,7 +326,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                 verifyFiles();
             }
         } catch (Exception e) {
-            e.getMessage();
+            e.printStackTrace();;
         }
     }
 
@@ -355,7 +355,7 @@ public class LCMMFrame extends JFrame implements MouseListener, ActionListener, 
                     }
                     dtde.dropComplete(true);
                 } catch (Exception e) {
-                    e.getMessage();
+                    e.printStackTrace();;
                     dtde.dropComplete(false);
                 }
             } else {

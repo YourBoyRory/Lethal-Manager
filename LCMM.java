@@ -8,7 +8,7 @@ public class LCMM {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.getMessage();
+            e.printStackTrace();;
         }
         new LCMMFrame();
     }

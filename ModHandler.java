@@ -35,7 +35,7 @@ public class ModHandler {
                             out.write(buffer, 0, len);
                         }
                     } catch (Exception e) {
-                        e.getMessage();
+                        e.printStackTrace();;
                     }
                 }
             }
@@ -59,10 +59,10 @@ public class ModHandler {
                     outputStream.write(buffer, 0, bytesRead);
                 }
             } catch (IOException e) {
-                e.getMessage();
+                e.printStackTrace();;
             }
         } catch (Exception e) {
-            e.getMessage();
+            e.printStackTrace();;
         }
     }
 
@@ -70,8 +70,8 @@ public class ModHandler {
         Path path = Paths.get(config.pluginsFolder + File.separator + modName);
         try {
             Files.delete(path);
-        } catch (IOException ioe) {
-            ioe.getMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
