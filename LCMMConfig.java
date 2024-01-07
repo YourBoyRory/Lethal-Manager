@@ -57,8 +57,6 @@ public class LCMMConfig {
         } else if (!modLoaderCore.exists() || !modLoaderWinhtpp.exists()) {
             modloaderFound = false;
         }
-        System.out.println("gameFound: " + gameFound);
-        System.out.println("modloaderFound: " + modloaderFound);
     }
 
     private String getPlatformDefault() {
@@ -69,7 +67,7 @@ public class LCMMConfig {
         } else if (osName.startsWith("Linux")) {
             return System.getProperty("user.home") + "/.steam/steam/steamapps/common/Lethal Company";
         } else {
-            System.out.println("Un-Supported: " + osName);
+            System.out.println("Please Report Un-Supported OS: " + osName);
             return null;
         }
     }
