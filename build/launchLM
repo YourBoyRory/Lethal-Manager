@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar Lethal-Manager-Universal.jar
+java -jar Lethal-Manager.jar

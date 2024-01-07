@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/home/rory/Lethal-Manager/build/Lethal-Manager.jar</jar>
-  <outfile>/home/rory/Lethal-Manager/build/win-build/package/Lethal-Manager.exe</outfile>
+  <jar>/home/rory/Desktop/Lethal-Manager/build/Lethal-Manager.jar</jar>
+  <outfile>/home/rory/Desktop/Lethal-Manager/build/win-build/package/Lethal-Manager.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>/home/rory/Lethal-Manager/build/Lethal-Manager-Icon.ico</icon>
+  <icon>/home/rory/Desktop/Lethal-Manager/build/Lethal-Manager-Icon.ico</icon>
   <jre>
     <path>JRE</path>
     <bundledJre64Bit>false</bundledJre64Bit>
