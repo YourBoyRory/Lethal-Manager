@@ -1,0 +1,12 @@
+#!/bin/bash
+mkdir ~/.lethal-manager/
+cp ./java-6e339bb-x86_64.AppImage ~/.lethal-manager/java-6e339bb-x86_64.AppImage
+cp ./Lethal-Manager.jar ~/.lethal-manager/Lethal-Manager.jar
+cp ./Lethal-Manager.jar ~/.lethal-manager/Lethal-Icon.png
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=/home/deck/.lethal-manager/java-6e339bb-x86_64.AppImage -jar /home/deck/.lethal-manager/Lethal-Manager.jar
+Icon=/home/deck/.lethal-manager/Lethal-Icon.png
+Name=Lethal-Manager" > /home/deck/.local/share/applications/Lethal-Manager.desktop

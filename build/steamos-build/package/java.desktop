@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=/home/rory/Desktop/Lethal-Manager/build/steamos-build/package/jre/bin/java
+Name=java
+Categories=Utility
+Icon=icon
+X-AppImage-Version=6e339bb
