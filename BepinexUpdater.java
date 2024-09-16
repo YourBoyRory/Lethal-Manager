@@ -30,7 +30,7 @@ public class BepinexUpdater {
 
             for (String line : lines) {
                 if (line.contains("browser_download_url")) {
-                    if (line.contains("x64")) {
+                    if (line.contains("win_x64")) {
                         return line.split(":",2)[1].trim().replaceAll("\"", "").replaceAll("}", "");
                     }
                 }
