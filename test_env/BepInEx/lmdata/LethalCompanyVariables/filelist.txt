@@ -1,0 +1,10 @@
+BepInEx/
+BepInEx/patchers/
+BepInEx/patchers/LCVPreloader.dll
+BepInEx/plugins/
+BepInEx/plugins/LCVCompat.dll
+BepInEx/plugins/Lethal_Company_Variables.dll
+CHANGELOG.md
+icon.png
+manifest.json
+README.md

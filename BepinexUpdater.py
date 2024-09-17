@@ -1,11 +1,12 @@
 from urllib.request import urlretrieve
 import requests
 import zipfile
+import os
 
 class BepinexUpdater:
 
     def __init__(self, config):
-        package_directory = config['game_directory'] + "BepinEx.zip"
+        package_directory = os.path.join(config['game_directory'], "BepinEx.zip")
         url = self.getLatestURL()
         if url is not None:
             if self.downloadFile(url, package_directory):
@@ -26,7 +27,7 @@ class BepinexUpdater:
 
     def downloadFile(self, url, destination):
         try:
-            uurlretrieve(url, destination)
+            urlretrieve(url, destination)
             print("[INFO] Downloaded BepinEx Package.")
             return True
         except:
@@ -35,8 +36,8 @@ class BepinexUpdater:
 
     def install(self, package, destination):
         try:
-            with zipfile.ZipFile(package, 'r') as zip_ref:
-                zip_ref.extractall(destination)
+            with zipfile.ZipFile(package, 'r') as package:
+                package.extractall(destination)
             print("[INFO] Installed BepinEx Package.")
             return True
         except:
