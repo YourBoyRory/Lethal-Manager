@@ -10,7 +10,6 @@ class Config:
 
     def __init__(self):
         self.load_config()
-        print(self.config)
 
     def load_config(self):
         try:
@@ -43,7 +42,6 @@ class Config:
         gameDirectory = os.path.join(self.config["game_directory"], "Lethal Company.exe")
         self.config["gameFound"] = False
         self.config["modloaderFound"] = False
-        print(os.path.isfile(modLoaderWinhtpp), os.path.isdir(modLoaderCore))
         if os.path.isfile(gameDirectory):
             self.config["gameFound"] = True
         if os.path.isdir(modLoaderCore) and os.path.isfile(modLoaderWinhtpp):
@@ -52,11 +50,8 @@ class Config:
 
     def get_platform_defaults(self):
         if os.name == "posix":  # If we are on Linux or MacOS
-            return os.path.join(Path.home(), "/.steam/steam/steamapps/common/Lethal Company");
+            return os.path.join(Path.home(), ".steam/steam/steamapps/common/Lethal Company")
         else:                   # If we are on Windows
             return "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company"
 
 
-
-
-Config()

@@ -7,14 +7,14 @@ class BepinexUpdater:
 
     def __init__(self, config):
         package_directory = os.path.join(config['game_directory'], "BepinEx.zip")
-        url = self.getLatestURL()
+        url = self.getLatestURL("https://api.github.com/repos/BepInEx/BepInEx/releases/latest")
         if url is not None:
             if self.downloadFile(url, package_directory):
                 self.install(package_directory, config['game_directory'])
 
-    def getLatestURL(self):
+    def getLatestURL(self, url):
         try:
-            response = requests.get("https://api.github.com/repos/BepInEx/BepInEx/releases/latest").json()
+            response = requests.get(url).json()
             print("[INFO] Connected to Github API.")
             for packages in response["assets"]:
                 if "win_x64" in packages["browser_download_url"]:
@@ -44,5 +44,4 @@ class BepinexUpdater:
             print("[ERROR] Install Failed, Update Aborted.")
             return False
 
-config={"game_directory": "./test_env/"}
-BepinexUpdater(config)
+
