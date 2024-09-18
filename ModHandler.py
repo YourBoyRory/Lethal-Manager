@@ -4,7 +4,7 @@ import os
 import os.path as path
 
 class ModHandler:
-    
+
     mod_list = { }
 
     def __init__(self, config):
@@ -72,17 +72,20 @@ class ModHandler:
         else:
             print(f"[INFO] Nothing to do. {modname} already enabled.")
             return False
-       
+
     def compile_modlist(self):
         self.mod_list.clear()
-        for file in os.listdir(self.config["lmdata_directory"]):
-            if self.is_installed(file):
-                with open(path.join(self.config["lmdata_directory"], file, "manifest.json"), 'r') as manifest:
-                    manifest = json.load(manifest)
-                self.mod_list[file] = manifest
+        try:
+            for file in os.listdir(self.config["lmdata_directory"]):
+                if self.is_installed(file):
+                    with open(path.join(self.config["lmdata_directory"], file, "manifest.json"), 'r') as manifest:
+                        manifest = json.load(manifest)
+                    self.mod_list[file] = manifest
+        except:
+            print(f"[INFO] No Mods Found.")
         print(f"[INFO] Rebuilt Modlist")
         self.show_modlist()
-            
+
     def remove_file(self, file):
         if not path.isdir(file):
             if path.exists(file):
@@ -94,7 +97,7 @@ class ModHandler:
                 os.makedirs(path.dirname(path_new))
             if path.exists(path_old):
                 os.rename(path_old, path_new)
-                
+
     def get_needed_dependencies(self, modname):
         needed_dependency = []
         needed_enabled = []
@@ -110,10 +113,10 @@ class ModHandler:
                 elif not self.is_enabled(curr_dependency):
                     needed_enabled += temp
         return needed_dependency, needed_enabled
-        
+
     def is_installed(self, modname):
         return path.exists(path.join(self.config["lmdata_directory"], modname, "manifest.json"))
-            
+
     def is_enabled(self, modname):
         return not path.exists(path.join(self.config["lmdata_directory"], modname, ".disabled"))
 
@@ -128,7 +131,7 @@ class ModHandler:
             print (key)
             for name, items in pair .items():
                 print (f"    {name}: {items}")
-                
+
     def get_destination(self, file):
         if path.dirname(file):
             if "BepInEx" in file:
