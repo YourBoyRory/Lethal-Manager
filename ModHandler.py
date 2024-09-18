@@ -4,9 +4,12 @@ import os
 import os.path as path
 
 class ModHandler:
+    
+    mod_list = { }
 
     def __init__(self, config):
         self.config = config
+        self.compile_modlist()
 
     def install(self, package):
         with zipfile.ZipFile(package, 'r') as package:
@@ -20,6 +23,7 @@ class ModHandler:
                 for files in package.namelist():
                     change_file.write(f"{files}\n")
         print(f"[INFO] {package_info["name"]} Installed.")
+        self.compile_modlist()
         return package_info["name"]
 
     def uninstall(self, modname):
@@ -33,6 +37,7 @@ class ModHandler:
                         self.remove_file(path.join(self.get_destination(file), file))
             self.remove_file(path.join(self.config["lmdata_directory"], modname, "filelist.txt"))
             print(f"[INFO] {modname} Uninstalled.")
+            self.compile_modlist()
             return True
         else:
             print(f"[INFO] Nothing to do. {modname} not installed.")
@@ -47,6 +52,7 @@ class ModHandler:
                         self.move_file(path.join(self.get_destination(file), file), path.join(self.config["lmdata_directory"], modname, file))
             open(path.join(self.config["lmdata_directory"], modname, ".disabled"), 'a')
             print(f"[INFO] {modname} Disabled.")
+            self.compile_modlist()
             return True
         else:
             print(f"[INFO] Nothing to do. {modname} already disabled.")
@@ -61,17 +67,26 @@ class ModHandler:
                         self.move_file(path.join(self.config["lmdata_directory"], modname, file), path.join(self.get_destination(file), file))
             self.remove_file(path.join(self.config["lmdata_directory"], modname, ".disabled"))
             print(f"[INFO] {modname} Enabled.")
+            self.compile_modlist()
             return True
         else:
             print(f"[INFO] Nothing to do. {modname} already enabled.")
             return False
-            
+       
+    def compile_modlist(self):
+        self.mod_list.clear()
+        for file in os.listdir(self.config["lmdata_directory"]):
+            if self.is_installed(file):
+                with open(path.join(self.config["lmdata_directory"], file, "manifest.json"), 'r') as manifest:
+                    manifest = json.load(manifest)
+                self.mod_list[file] = manifest
+        print(f"[INFO] Rebuilt Modlist")
+        self.show_modlist()
             
     def remove_file(self, file):
         if not path.isdir(file):
             if path.exists(file):
                 os.remove(file)
-
 
     def move_file(self, path_old, path_new):
         if not path.isdir(path_old):
@@ -108,6 +123,12 @@ class ModHandler:
         else:
             return False
 
+    def show_modlist(self):
+        for key, pair in self.mod_list.items():
+            print (key)
+            for name, items in pair .items():
+                print (f"    {name}: {items}")
+                
     def get_destination(self, file):
         if path.dirname(file):
             if "BepInEx" in file:
