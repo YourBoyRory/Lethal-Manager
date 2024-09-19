@@ -12,9 +12,14 @@ class ModHandler:
         self.compile_modlist()
 
     def install(self, package):
+        preformed_update = False
         try:
             with zipfile.ZipFile(package, 'r') as package:
                 package_info=json.loads(package.read("manifest.json"))
+                if self.is_installed(package_info["name"]):
+                    print(f"[INFO] {package_info["name"]} already installed. updating...")
+                    self.uninstall(package_info["name"])
+                    preformed_update = True
                 for file in package.namelist():
                     if  self.in_file_blocklist(file):
                         package.extract(file, path.join(self.config["lmdata_directory"], package_info["name"]))
@@ -25,9 +30,9 @@ class ModHandler:
                         change_file.write(f"{files}\n")
             print(f"[INFO] {package_info["name"]} Installed.")
             self.compile_modlist()
-            return package_info["name"]
+            return package_info["name"], preformed_update
         except:
-            return None
+            return None, None
 
     def uninstall(self, modname):
         if self.is_installed(modname):

@@ -2,42 +2,32 @@ import sys
 import PyQt5
 from PyQt5.QtWidgets import QWidget, QListWidget, QMainWindow, QApplication, QGridLayout, QLabel, QSpacerItem
 from PyQt5.QtWidgets import QSizePolicy, QMenu, QListWidgetItem, QDesktopWidget, QMessageBox, QPushButton, QMenuBar
-from PyQt5.QtWidgets import QMenuBar, QAction
+from PyQt5.QtWidgets import QMenuBar, QAction, QFileDialog
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent, QIcon, QPixmap
 from ModHandler import ModHandler
 from BepinexUpdater import BepinexUpdater
 from LCMMConfig import Config
+from Theme import Theme
+import platform
+import subprocess
 import os.path
 
 class DragDropWindow(QMainWindow):
 
     config = Config()
-    #BepinexUpdater(config.config)
+    
     modhandler = ModHandler(config.config)
+    styleSheets = Theme()
     cache_selection = None
 
     def __init__(self):
 
         super().__init__()
-
+        
         # Set up the main widget and layout
         self.central_widget = QWidget()
-        style = """
-            QLabel {
-                font: 14pt
-            }
-            QListWidget {
-                font: 14pt
-            }
-            QPushButton {
-                font-size: 14pt;
-            }
-            QPushButton:hover {
-                color: darkgray;
-            }
-        """
-        self.setStyleSheet(style)
+        style = self.styleSheets.force_dark_mode
         self.setCentralWidget(self.central_widget)
         self.layout = QGridLayout()
         self.central_widget.setLayout(self.layout)
@@ -102,6 +92,7 @@ class DragDropWindow(QMainWindow):
         self.listwidget.setMaximumWidth(500)
         self.listwidget.setMinimumWidth(300)
         self.listwidget.setMinimumHeight(550)
+        self.listwidget.setStyleSheet(style)
         self.layout.addWidget(self.listwidget,1,0,11,1)
 
         # Context menu
@@ -131,15 +122,24 @@ class DragDropWindow(QMainWindow):
         self.uninstall_menubar_action.setEnabled(False)
         self.toggle_menubar_action.triggered.connect(self.toggle_mod_status)
         self.toggle_menubar_action.setEnabled(False)
-        self.refresh_menubar_action.triggered.connect(self.partial_refresh)
+        self.refresh_menubar_action.triggered.connect(self.full_refresh)
 
         self.options_menu = self.menu_bar.addMenu("Options")
         self.update_menubar_action = QAction("Update BepInEx", self)
         self.opendir_menubar_action = QAction("Open Game Directroy", self)
         self.setdir_menubar_action = QAction("Set Game Directory", self)
+        self.darkmode_menubar_action = QAction("Toggle Darkmode", self)
         self.options_menu.addAction(self.update_menubar_action)
         self.options_menu.addAction(self.opendir_menubar_action)
         self.options_menu.addAction(self.setdir_menubar_action)
+        self.update_menubar_action.triggered.connect(self.update_bepinex)
+        self.update_menubar_action.setEnabled(False)
+        self.opendir_menubar_action.triggered.connect(self.open_game_folder)
+        self.opendir_menubar_action.setEnabled(False)
+        self.setdir_menubar_action.triggered.connect(self.set_game_directory)
+        self.darkmode_menubar_action.triggered.connect(self.toggle_darkmode)
+        if not platform.system() == "Windows":
+            self.options_menu.addAction(self.darkmode_menubar_action)
 
         self.help_menu = self.menu_bar.addMenu("Help")
         self.downloadmods_menubar_action = QAction("Download Mods", self)
@@ -150,8 +150,36 @@ class DragDropWindow(QMainWindow):
         self.help_menu.addAction(self.about_menubar_action)
 
         #display window
-        self.refresh_list()
         self.setupWindow()
+        self.setTheme()
+        
+        # Post window set up
+        self.verify_files()
+        self.refresh_list()
+
+    def setTheme(self):
+        if not platform.system() == "Windows":
+            if self.config.config["darkmode"] == "False":
+                print("[INFO] Darkmode is on")
+                self.setStyleSheet(self.styleSheets.force_dark_mode)
+                self.listwidget.setStyleSheet(self.styleSheets.force_dark_mode_list)
+                self.menu_bar.setStyleSheet(self.styleSheets.force_dark_mode_list)
+                self.config.config["darkmode"] = "True"
+            else:
+                print("[INFO] Darkmode is off")
+                self.setStyleSheet(self.styleSheets.simple_style_sheet)
+                self.menu_bar.setStyleSheet(self.styleSheets.simple_style_sheet)
+                self.listwidget.setStyleSheet(self.styleSheets.simple_style_sheet)
+                self.config.config["darkmode"] = "False"
+        else:
+            # Other platforms will provide theme
+            self.setStyleSheet(self.styleSheets.simple_style_sheet)
+            self.listwidget.setStyleSheet(self.styleSheets.simple_style_sheet)
+
+    def toggle_darkmode(self):
+        self.setTheme()
+        self.config.save_config()
+        self.update()
 
     def make_button(self, title, action):
         button = QPushButton(title)
@@ -187,7 +215,6 @@ class DragDropWindow(QMainWindow):
                 self.refresh_mod_data()
             self.context_menu.exec(event.globalPos())
 
-
     def dragEnterEvent(self, event: QDragEnterEvent):
         # Accept the drag if it contains files
         if event.mimeData().hasUrls():
@@ -206,7 +233,23 @@ class DragDropWindow(QMainWindow):
         if self.listwidget.currentItem().text() is not None:
             self.refresh_mod_data()
 
+    def set_game_directory(self):
+        selected_folder = QFileDialog.getExistingDirectory(self, 'Select Game Folder', self.config.config["game_directory"], QFileDialog.ShowDirsOnly)
+        if selected_folder:
+            self.config.set_game_directory(selected_folder)
+            print(selected_folder)
+            self.config.save_config()
+            self.full_refresh()
 
+    def open_game_folder(self):
+        path = self.config.config["game_directory"]
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
+        
     def show_more_clicked(self):
         dependency_list = ""
         if self.listwidget.currentItem().text() is not None:
@@ -230,6 +273,12 @@ class DragDropWindow(QMainWindow):
         self.refresh_list()
         self.refresh_mod_data()
 
+    def full_refresh(self):
+        self.cache_selection=None
+        self.verify_files()
+        self.refresh_list()
+        self.refresh_mod_data()
+
     def toggle_mod_status(self):
         if self.selected_mod_enabled:
             self.disable_mod()
@@ -238,9 +287,10 @@ class DragDropWindow(QMainWindow):
 
     def refresh_list(self):
         self.listwidget.clear()
-        for mod in self.modhandler.mod_list:
-            icon = QIcon(os.path.join(self.config.config["lmdata_directory"], mod, "icon.png"))
-            self.listwidget.addItem(QListWidgetItem(icon, mod))
+        if self.filesVerified:
+            for mod in self.modhandler.mod_list:
+                icon = QIcon(os.path.join(self.config.config["lmdata_directory"], mod, "icon.png"))
+                self.listwidget.addItem(QListWidgetItem(icon, mod))
 
     def refresh_mod_data(self):
 
@@ -289,16 +339,16 @@ class DragDropWindow(QMainWindow):
                 curr_dependency = dependency[dependency.find('-')+1:dependency.rfind('-')]
                 if curr_dependency != "BepInExPack":
                     dependency_count += 1
-                    if dependency_count is 4:
+                    if dependency_count == 4:
                         dependency_list += (dependency)
-                    elif dependency_count is 5:
+                    elif dependency_count == 5:
                         dependency_count=len(self.modhandler.mod_list[modname]["dependencies"])-(dependency_count+1)
                         self.show_all_dependencies.setText(f"Show {dependency_count} more...\n")
                         self.show_all_dependencies.setVisible(True)
                         break
                     else:
                         dependency_list += (dependency + "\n")
-            if dependency_count is 4:
+            if dependency_count == 4:
                 dependency_list += "\n"
             if dependency_list == "":
                 dependency_list = "None\n"
@@ -328,11 +378,14 @@ class DragDropWindow(QMainWindow):
             self.display_mod_icon.setVisible(False)
 
     def install_mod(self, package):
-        modname = self.modhandler.install(package)
+        modname, preformed_update = self.modhandler.install(package)
         if modname == None:
             msg = self.make_popup_window(QMessageBox.Critical, f"Failed to install mod", "The provided package failed to install!","The mod manifest may be missing or malformed. Contact the mod creator and notify me on Github.\n\n https://github.com/YourBoyRory")
             msg.exec()
         else:
+            if preformed_update:
+                msg = self.make_popup_window(QMessageBox.Information, "Mod Updated", f"{modname} updated to {self.modhandler.mod_list[modname]["version_number"]}", "")
+                msg.exec()
             self.check_for_dependencies(modname)
 
     def check_for_dependencies(self, modname):
@@ -373,6 +426,41 @@ class DragDropWindow(QMainWindow):
         """)
         return msg
 
+    def verify_files(self):
+        self.filesVerified = True
+        game_found, loader_found = self.config.verify_files()
+        self.update_menubar_action.setEnabled(True)
+        self.opendir_menubar_action.setEnabled(True)
+        if not game_found:
+            self.filesVerified = False
+            self.opendir_menubar_action.setEnabled(False)
+            self.update_menubar_action.setEnabled(False)
+            msg = self.make_popup_window(QMessageBox.Warning, "Lethal Company Not Found", "We where unabled to locate the games directory automatically. Please provide the path to your lethal company folder", "")
+            msg.addButton(QPushButton('Set Directory'), QMessageBox.YesRole)
+            msg.addButton(QPushButton('Later'), QMessageBox.NoRole)
+            selection = msg.exec()
+            if selection == 0:
+                self.set_game_directory()
+        elif not loader_found:
+            self.filesVerified = False
+            self.update_menubar_action.setText("Install BepInEx")
+            msg = self.make_popup_window(QMessageBox.Warning, "BepInEx Not Found", "BepInEx does not appear to be installed. This is the mod loader for Lethal compant and will need to be installed to run mods", "Install BepInEx now?")
+            msg.addButton(QPushButton('Install'), QMessageBox.YesRole)
+            msg.addButton(QPushButton('Later'), QMessageBox.NoRole)
+            selection = msg.exec()
+            if selection == 0:
+                self.update_bepinex()
+           
+    def update_bepinex(self):
+        if not self.config.config["gameFound"]:
+            msg = self.make_popup_window(QMessageBox.Warning, "Lethal Company Not Found", "We where unabled to locate the games directory automatically.", "Are you sure you want to attempt to install BepInEx here?")
+            msg.addButton(QPushButton('Yes'), QMessageBox.YesRole)
+            msg.addButton(QPushButton('No'), QMessageBox.NoRole)
+            selection = msg.exec()
+            if selection is not QMessageBox.YesRole:
+                return
+        BepinexUpdater(self, self.config.config)
+        self.verify_files()
 
     def uninstall_mod(self):
         if self.listwidget.currentItem() is not None:

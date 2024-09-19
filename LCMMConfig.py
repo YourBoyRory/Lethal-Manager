@@ -16,25 +16,28 @@ class Config:
             self.parser['General'] = { }
             self.parser.read(self.config_path)
             self.set_game_directory(self.parser['General']["game_directory"])
+            self.config["darkmode"] = self.parser['General']["darkmode"]
         except:
             print("[INFO] No valid config, creating one.")
+            self.config["darkmode"] = "True"
             self.set_game_directory(self.get_platform_defaults())
             self.save_config()
 
     def save_config(self):
-        try:
-            self.parser['General']["game_directory"] = self.config["game_directory"]
-            with open(self.config_path, 'w') as configfile:
-                self.parser.write(configfile)
-        except:
-            print("[ERROR] Config save failed. Do we have permission?")
+        #try:
+        self.parser['General']["game_directory"] = self.config["game_directory"]
+        self.parser['General']["darkmode"] = self.config["darkmode"]
+        with open(self.config_path, 'w') as configfile:
+            self.parser.write(configfile)
+        print("[INFO] Saved config")
+        #except:
+            #print("[ERROR] Config save failed. Do we have permission?")
 
     def set_game_directory(self, new_directory):
         self.config["game_directory"] = new_directory
         self.config["bepinex_directory"] = os.path.join(self.config["game_directory"], "BepInEx")
         self.config["plugins_directory"] = os.path.join(self.config["bepinex_directory"], "plugins")
         self.config["lmdata_directory"] = os.path.join(self.config["bepinex_directory"], "lmdata")
-        self.verify_files()
 
     def verify_files(self):
         modLoaderCore = os.path.join(self.config["bepinex_directory"], "core")
@@ -43,9 +46,12 @@ class Config:
         self.config["gameFound"] = False
         self.config["modloaderFound"] = False
         if os.path.isfile(gameDirectory):
+            print("[INFO] Game is found.")
             self.config["gameFound"] = True
         if os.path.isdir(modLoaderCore) and os.path.isfile(modLoaderWinhtpp):
+            print("[INFO] BepInEx is found.")
             self.config["modloaderFound"] = True
+        return self.config["gameFound"], self.config["modloaderFound"]
 
 
     def get_platform_defaults(self):
