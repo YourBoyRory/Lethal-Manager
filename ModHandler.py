@@ -2,6 +2,7 @@ import zipfile
 import json
 import os
 import os.path as path
+import traceback
 
 class ModHandler:
 
@@ -32,6 +33,7 @@ class ModHandler:
             self.compile_modlist()
             return package_info["name"], preformed_update
         except:
+            self.display_error("[ERROR] Mod not Installed, possibly malformed.")
             return None, None
 
     def uninstall(self, modname):
@@ -150,3 +152,13 @@ class ModHandler:
                 return self.config["bepinex_directory"]
         else:
             return self.config["plugins_directory"]
+
+
+    def display_error(self, context):
+        print("\n====================================================================================")
+        print(context)
+        print("Ah shit, here we go again.")
+        print(traceback.format_exc())
+        print("Hello beta tester, You found one!")
+        print("Please Report the error above: https://github.com/YourBoyRory/Lethal-Manager/issues")
+        print("====================================================================================\n")

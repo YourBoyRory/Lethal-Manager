@@ -1,1 +1,1 @@
-pyinstaller --onefile ./LCMMFrame.py
+pyinstaller --onefile --name "Lethal-Manager" ./LCMMFrame.py

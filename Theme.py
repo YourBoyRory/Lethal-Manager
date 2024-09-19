@@ -20,7 +20,7 @@ class Theme:
         color: white;
         font: 14pt;
         font-size: 14pt;
-        
+
         QLabel {
             font: 14pt;
         }
@@ -32,17 +32,19 @@ class Theme:
         }
     """
     force_dark_mode_list="""
-        QMenuBar { 
+        QMenuBar {
             background-color: #303030;
-            font-size: 12pt;
+            font-size: 10pt;
         }
         QMenu {
             background-color: #303030;
-            font-size: 12pt;
+            font-size: 10pt;
         }
-        QMenu:pressed {
-            background-color: #000000;
-            font-size: 12pt;
+        QMenu::item:disabled {
+            color: gray
+        }
+        QMenu:selected {
+            background-color: #242424;
         }
         QListView {
             background-color: #303030;

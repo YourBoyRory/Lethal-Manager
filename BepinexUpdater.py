@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QMessageBox
 import requests
 import zipfile
 import os
+import traceback
 
 class BepinexUpdater:
 
@@ -27,7 +28,7 @@ class BepinexUpdater:
         else:
             msg = self.make_popup_window(parent, QMessageBox.Critical, "BepInEx Updater Error", "Failed to connect to the Github API", "Please check that you have internet and try again.")
         msg.exec()
-            
+
 
     def getLatestURL(self, url):
         try:
@@ -39,7 +40,7 @@ class BepinexUpdater:
             print("[WARN] Could not find package match, guessing from avalible packages...")
             return response["assets"][4]["browser_download_url"], response["tag_name"]
         except:
-            print("[ERROR] API Call Failed, Update Aborted.")
+            self.display_error("[ERROR] API Call Failed, Update Aborted.")
             return None, None
 
     def downloadFile(self, url, destination):
@@ -48,7 +49,7 @@ class BepinexUpdater:
             print("[INFO] Downloaded BepinEx Package.")
             return True
         except:
-            print("[ERROR] Download Failed, Update Aborted.")
+            self.display_error("[ERROR] Download Failed, Update Aborted.")
             return False
 
     def install(self, package, destination):
@@ -58,7 +59,7 @@ class BepinexUpdater:
             print("[INFO] Installed BepinEx Package.")
             return True
         except:
-            print("[ERROR] Install Failed, Update Aborted.")
+            self.display_error("[ERROR] Install Failed, Update Aborted.")
             return False
 
     def make_popup_window(self, parent, mtype, title, top_text, bottom_text):
@@ -75,3 +76,12 @@ class BepinexUpdater:
             }
         """)
         return msg
+
+    def display_error(self, context):
+        print("\n====================================================================================")
+        print(context)
+        print("Ah shit, here we go again.")
+        print(traceback.format_exc())
+        print("Hello beta tester, You found one!")
+        print("Please Report the error above: https://github.com/YourBoyRory/Lethal-Manager/issues")
+        print("====================================================================================\n")

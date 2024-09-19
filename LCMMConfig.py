@@ -1,6 +1,7 @@
 import configparser
 import os
 from pathlib import Path
+import traceback
 
 class Config:
 
@@ -10,6 +11,7 @@ class Config:
 
     def __init__(self):
         self.load_config()
+        print(self.config)
 
     def load_config(self):
         try:
@@ -24,14 +26,14 @@ class Config:
             self.save_config()
 
     def save_config(self):
-        #try:
-        self.parser['General']["game_directory"] = self.config["game_directory"]
-        self.parser['General']["darkmode"] = self.config["darkmode"]
-        with open(self.config_path, 'w') as configfile:
-            self.parser.write(configfile)
-        print("[INFO] Saved config")
-        #except:
-            #print("[ERROR] Config save failed. Do we have permission?")
+        try:
+            self.parser['General']["game_directory"] = self.config["game_directory"]
+            self.parser['General']["darkmode"] = self.config["darkmode"]
+            with open(self.config_path, 'w') as configfile:
+                self.parser.write(configfile)
+            print("[INFO] Saved config")
+        except:
+            self.display_error("[ERROR] Config save failed. Do we have permission?")
 
     def set_game_directory(self, new_directory):
         self.config["game_directory"] = new_directory
@@ -60,4 +62,11 @@ class Config:
         else:                   # If we are on Windows
             return "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company"
 
-
+    def display_error(self, context):
+        print("\n====================================================================================")
+        print(context)
+        print("Ah shit, here we go again.")
+        print(traceback.format_exc())
+        print("Hello beta tester, You found one!")
+        print("Please Report the error above: https://github.com/YourBoyRory/Lethal-Manager/issues")
+        print("====================================================================================\n")

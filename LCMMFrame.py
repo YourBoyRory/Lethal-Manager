@@ -12,11 +12,12 @@ from Theme import Theme
 import platform
 import subprocess
 import os.path
+import traceback
 
 class DragDropWindow(QMainWindow):
 
     config = Config()
-    
+
     modhandler = ModHandler(config.config)
     styleSheets = Theme()
     cache_selection = None
@@ -24,7 +25,6 @@ class DragDropWindow(QMainWindow):
     def __init__(self):
 
         super().__init__()
-        
         # Set up the main widget and layout
         self.central_widget = QWidget()
         style = self.styleSheets.force_dark_mode
@@ -138,7 +138,7 @@ class DragDropWindow(QMainWindow):
         self.opendir_menubar_action.setEnabled(False)
         self.setdir_menubar_action.triggered.connect(self.set_game_directory)
         self.darkmode_menubar_action.triggered.connect(self.toggle_darkmode)
-        if not platform.system() == "Windows":
+        if platform.system() == "Windows":
             self.options_menu.addAction(self.darkmode_menubar_action)
 
         self.help_menu = self.menu_bar.addMenu("Help")
@@ -152,32 +152,45 @@ class DragDropWindow(QMainWindow):
         #display window
         self.setupWindow()
         self.setTheme()
-        
+
         # Post window set up
         self.verify_files()
         self.refresh_list()
 
     def setTheme(self):
-        if not platform.system() == "Windows":
+        if platform.system() == "Windows":
             if self.config.config["darkmode"] == "False":
-                print("[INFO] Darkmode is on")
-                self.setStyleSheet(self.styleSheets.force_dark_mode)
-                self.listwidget.setStyleSheet(self.styleSheets.force_dark_mode_list)
-                self.menu_bar.setStyleSheet(self.styleSheets.force_dark_mode_list)
-                self.config.config["darkmode"] = "True"
-            else:
                 print("[INFO] Darkmode is off")
                 self.setStyleSheet(self.styleSheets.simple_style_sheet)
                 self.menu_bar.setStyleSheet(self.styleSheets.simple_style_sheet)
+                self.context_menu.setStyleSheet(self.styleSheets.simple_style_sheet)
                 self.listwidget.setStyleSheet(self.styleSheets.simple_style_sheet)
-                self.config.config["darkmode"] = "False"
+            else:
+                print("[INFO] Darkmode is on")
+                self.setStyleSheet(self.styleSheets.force_dark_mode)
+                self.listwidget.setStyleSheet(self.styleSheets.force_dark_mode_list)
+                self.context_menu.setStyleSheet(self.styleSheets.force_dark_mode_list)
+                self.menu_bar.setStyleSheet(self.styleSheets.force_dark_mode_list)
         else:
             # Other platforms will provide theme
             self.setStyleSheet(self.styleSheets.simple_style_sheet)
             self.listwidget.setStyleSheet(self.styleSheets.simple_style_sheet)
 
     def toggle_darkmode(self):
-        self.setTheme()
+        if self.config.config["darkmode"] == "True":
+            print("[INFO] Darkmode is off")
+            self.setStyleSheet(self.styleSheets.simple_style_sheet)
+            self.menu_bar.setStyleSheet(self.styleSheets.simple_style_sheet)
+            self.context_menu.setStyleSheet(self.styleSheets.simple_style_sheet)
+            self.listwidget.setStyleSheet(self.styleSheets.simple_style_sheet)
+            self.config.config["darkmode"] = "False"
+        else:
+            print("[INFO] Darkmode is on")
+            self.setStyleSheet(self.styleSheets.force_dark_mode)
+            self.listwidget.setStyleSheet(self.styleSheets.force_dark_mode_list)
+            self.context_menu.setStyleSheet(self.styleSheets.force_dark_mode_list)
+            self.menu_bar.setStyleSheet(self.styleSheets.force_dark_mode_list)
+            self.config.config["darkmode"] = "True"
         self.config.save_config()
         self.update()
 
@@ -249,7 +262,7 @@ class DragDropWindow(QMainWindow):
             subprocess.Popen(["open", path])
         else:
             subprocess.Popen(["xdg-open", path])
-        
+
     def show_more_clicked(self):
         dependency_list = ""
         if self.listwidget.currentItem().text() is not None:
@@ -450,7 +463,7 @@ class DragDropWindow(QMainWindow):
             selection = msg.exec()
             if selection == 0:
                 self.update_bepinex()
-           
+
     def update_bepinex(self):
         if not self.config.config["gameFound"]:
             msg = self.make_popup_window(QMessageBox.Warning, "Lethal Company Not Found", "We where unabled to locate the games directory automatically.", "Are you sure you want to attempt to install BepInEx here?")
