@@ -12,22 +12,27 @@ class ModHandler:
         self.compile_modlist()
 
     def install(self, package):
-        with zipfile.ZipFile(package, 'r') as package:
-            package_info=json.loads(package.read("manifest.json"))
-            for file in package.namelist():
-                if  self.in_file_blocklist(file):
-                    package.extract(file, path.join(self.config["lmdata_directory"], package_info["name"]))
-                else:
-                    package.extract(file, self.get_destination(file))
-            with open(path.join(self.config["lmdata_directory"], package_info["name"], "filelist.txt"), 'w') as change_file:
-                for files in package.namelist():
-                    change_file.write(f"{files}\n")
-        print(f"[INFO] {package_info["name"]} Installed.")
-        self.compile_modlist()
-        return package_info["name"]
+        try:
+            with zipfile.ZipFile(package, 'r') as package:
+                package_info=json.loads(package.read("manifest.json"))
+                for file in package.namelist():
+                    if  self.in_file_blocklist(file):
+                        package.extract(file, path.join(self.config["lmdata_directory"], package_info["name"]))
+                    else:
+                        package.extract(file, self.get_destination(file))
+                with open(path.join(self.config["lmdata_directory"], package_info["name"], "filelist.txt"), 'w') as change_file:
+                    for files in package.namelist():
+                        change_file.write(f"{files}\n")
+            print(f"[INFO] {package_info["name"]} Installed.")
+            self.compile_modlist()
+            return package_info["name"]
+        except:
+            return None
 
     def uninstall(self, modname):
         if self.is_installed(modname):
+            if not self.is_enabled(modname):
+                self.enable(modname)
             with open(path.join(self.config["lmdata_directory"], modname, "filelist.txt"), 'r') as change_file:
                 for file in change_file:
                     file = file.strip()

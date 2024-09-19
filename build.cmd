@@ -1,2 +1,2 @@
-pyinstaller --onefile --windowed --hidden-import=requests ./LCMMFrame.py
+pyinstaller --onefile --windowed ./LCMMFrame.py
 
