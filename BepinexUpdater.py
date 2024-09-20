@@ -9,16 +9,23 @@ class BepinexUpdater:
 
     def __init__(self, parent, config):
         self.config = config
-        package_directory = os.path.join(self.config['game_directory'], "BepinEx.zip")
+        package_directory = os.path.join(self.config.config['game_directory'], "BepinEx.zip")
         url, version = self.getLatestURL("https://api.github.com/repos/BepInEx/BepInEx/releases/latest")
         if url is not None:
             if self.downloadFile(url, package_directory):
-                status = self.install(package_directory, self.config['game_directory'])
+                status = self.install(package_directory, self.config.config['game_directory'])
                 if status:
-                    if self.config["modloaderFound"]:
-                        msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx updated to {version}", "")
+                    if self.config.config["modloaderFound"]:
+                        if self.config.config['bepinex_version'] == version:
+                            msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx updated.", f"{self.config.config['bepinex_version']} -> {version}")
+                            self.config.config['bepinex_version'] = version
+                            self.config.save_config()
+                        else:
+                            msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx was up to date.", f"{version} Reinstalled ")
                     else:
                         msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Installed", f"BepInEx {version} Installed", "")
+                        self.config.config['bepinex_version'] = version
+                        self.config.save_config()
                 else:
                     # Could not install BepInEx, Permissions maybe?
                     msg = self.make_popup_window(parent, QMessageBox.Critical, "BepInEx Updater Error", "BepInEx Failed during installation.", "Failed while extracting BepInEx package.\nCheck that the game folder is correct and you have permissions.")

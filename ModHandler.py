@@ -7,6 +7,7 @@ import traceback
 class ModHandler:
 
     mod_list = { }
+    mod_count=0
 
     def __init__(self, config):
         self.config = config

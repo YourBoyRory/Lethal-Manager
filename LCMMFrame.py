@@ -17,7 +17,7 @@ import traceback
 class DragDropWindow(QMainWindow):
 
     config = Config()
-
+    ver_str = "v2.0.0 - Beta"
     modhandler = ModHandler(config.config)
     styleSheets = Theme()
     cache_selection = None
@@ -148,6 +148,7 @@ class DragDropWindow(QMainWindow):
         self.help_menu.addAction(self.downloadmods_menubar_action)
         self.help_menu.addAction(self.troubleshoot_menubar_action)
         self.help_menu.addAction(self.about_menubar_action)
+        self.help_menu.triggered.connect(self.showAbout)
 
         #display window
         self.setupWindow()
@@ -212,8 +213,20 @@ class DragDropWindow(QMainWindow):
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         return label
 
+    def showAbout(self):
+        msg = self.make_popup_window(None, "About Lethal Manager",
+        f"Lethal Manager {self.ver_str}\nhttps://github.com/YourBoyRory/Lethal-Manager",
+        f"BepInEx Version: {self.config.config['bepinex_version']}\nMods Installed: {len(self.modhandler.mod_list)}\n\nSpecial Thanks!\ndeductiveyeti0 - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
+        msg.exec()
+
+    def showHelp(self):
+        pass
+
+    def openBrowser(self):
+        pass
+
     def setupWindow(self):
-        self.setWindowTitle("Lethal Manager v2 Alpha")
+        self.setWindowTitle(f"Lethal Manager")
         self.setAcceptDrops(True)
         self.resize(1000, 700)
         qr = self.frameGeometry()
@@ -239,8 +252,7 @@ class DragDropWindow(QMainWindow):
         # Get the dropped files
         urls = event.mimeData().urls()
         file_paths = [url.toLocalFile() for url in urls]
-        for package in file_paths:
-            self.install_mod(package)
+        self.install_mod(file_paths)
 
     def list_clicked(self, qmodelindex):
         if self.listwidget.currentItem().text() is not None:
@@ -390,16 +402,24 @@ class DragDropWindow(QMainWindow):
             self.show_all_dependencies.setVisible(False)
             self.display_mod_icon.setVisible(False)
 
-    def install_mod(self, package):
-        modname, preformed_update = self.modhandler.install(package)
-        if modname == None:
-            msg = self.make_popup_window(QMessageBox.Critical, f"Failed to install mod", "The provided package failed to install!","The mod manifest may be missing or malformed. Contact the mod creator and notify me on Github.\n\n https://github.com/YourBoyRory")
-            msg.exec()
-        else:
-            if preformed_update:
-                msg = self.make_popup_window(QMessageBox.Information, "Mod Updated", f"{modname} updated to {self.modhandler.mod_list[modname]["version_number"]}", "")
+    def install_mod(self, file_paths):
+        installed = [0]
+        for package in file_paths:
+            modname, preformed_update = self.modhandler.install(package)
+            if modname == None:
+                msg = self.make_popup_window(QMessageBox.Critical, f"Failed to install mod", "The provided package failed to install!","The mod manifest may be missing or malformed. Contact the mod creator and notify me on Github.\n\n https://github.com/YourBoyRory")
                 msg.exec()
-            self.check_for_dependencies(modname)
+            elif preformed_update:
+                    msg = self.make_popup_window(QMessageBox.Information, "Mod Updated", f"{modname} updated to {self.modhandler.mod_list[modname]["version_number"]}", "")
+                    msg.exec()
+            else:
+                temp = [modname]
+                installed += temp
+
+        for package in installed:
+            print(installed)
+            if package != 0:
+                self.check_for_dependencies(package)
 
     def check_for_dependencies(self, modname):
         display_missing = ""
@@ -472,7 +492,7 @@ class DragDropWindow(QMainWindow):
             selection = msg.exec()
             if selection is not QMessageBox.YesRole:
                 return
-        BepinexUpdater(self, self.config.config)
+        BepinexUpdater(self, self.config)
         self.verify_files()
 
     def uninstall_mod(self):
