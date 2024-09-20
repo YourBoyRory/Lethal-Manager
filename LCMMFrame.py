@@ -228,7 +228,7 @@ class DragDropWindow(QMainWindow):
     def showAbout(self):
         msg = self.make_popup_window(None, "About Lethal Manager",
         f"Lethal Manager {self.ver_str}\nYourBoyRory\nhttps://github.com/YourBoyRory/Lethal-Manager",
-        f"BepInEx Version: {self.bepinUpdater.bepinex_version}\nMods Installed: {len(self.modhandler.mod_list)}\n\n\nSpecial Thanks!\Hemoglobin - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
+        f"BepInEx Version: {self.bepinUpdater.bepinex_version}\nMods Installed: {len(self.modhandler.mod_list)}\n\n\nSpecial Thanks!\nHemoglobin - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
         msg.exec()
 
     def showHelp(self):
