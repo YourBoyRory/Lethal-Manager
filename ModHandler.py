@@ -14,14 +14,14 @@ class ModHandler:
         self.compile_modlist()
 
     def install(self, package):
-        preformed_update = False
+        old_version = None
         try:
             with zipfile.ZipFile(package, 'r') as package:
                 package_info=json.loads(package.read("manifest.json"))
                 if self.is_installed(package_info["name"]):
                     print(f"[INFO] {package_info["name"]} already installed. updating...")
+                    old_version = self.mod_list[package_info["name"]]["version_number"]
                     self.uninstall(package_info["name"])
-                    preformed_update = True
                 for file in package.namelist():
                     if  self.in_file_blocklist(file):
                         package.extract(file, path.join(self.config["lmdata_directory"], package_info["name"]))
@@ -32,9 +32,9 @@ class ModHandler:
                         change_file.write(f"{files}\n")
             print(f"[INFO] {package_info["name"]} Installed.")
             self.compile_modlist()
-            return package_info["name"], preformed_update
+            return package_info["name"], old_version
         except:
-            self.display_error("[ERROR] Mod not Installed, possibly malformed.")
+            self.display_error(f"[ERROR] Mod at {package} not Installed, possibly malformed.")
             return None, None
 
     def uninstall(self, modname):
@@ -126,6 +126,15 @@ class ModHandler:
                 elif not self.is_enabled(curr_dependency):
                     needed_enabled += temp
         return needed_dependency, needed_enabled
+        
+    def check_if_dependent(self, mod, dependent_mod):
+        with open(path.join(self.config["lmdata_directory"], dependent_mod, "manifest.json"), 'r') as manifest:
+            manifest = json.load(manifest)
+        for dependency in manifest["dependencies"]:
+            curr_dependency = dependency[dependency.find('-')+1:dependency.rfind('-')]
+            if curr_dependency == mod:
+                return True
+        return False
 
     def is_installed(self, modname):
         return path.exists(path.join(self.config["lmdata_directory"], modname, "manifest.json"))

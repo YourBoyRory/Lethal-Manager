@@ -6,26 +6,30 @@ import os
 import traceback
 
 class BepinexUpdater:
+    
+    bepinex_version="Not installed"
 
-    def __init__(self, parent, config):
+    def __init__(self, config):
         self.config = config
-        package_directory = os.path.join(self.config.config['game_directory'], "BepinEx.zip")
+        self.bepinex_version = self.refreshBepinVersion()
+        
+
+    def preformUpdate(self, parent):
+        package_directory = os.path.join(self.config['game_directory'], "BepinEx.zip")
         url, version = self.getLatestURL("https://api.github.com/repos/BepInEx/BepInEx/releases/latest")
         if url is not None:
             if self.downloadFile(url, package_directory):
-                status = self.install(package_directory, self.config.config['game_directory'])
+                status = self.install(package_directory, self.config['game_directory'])
                 if status:
-                    if self.config.config["modloaderFound"]:
-                        if self.config.config['bepinex_version'] == version:
-                            msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx updated.", f"{self.config.config['bepinex_version']} -> {version}")
-                            self.config.config['bepinex_version'] = version
-                            self.config.save_config()
+                    if self.config["modloaderFound"]:
+                        if self.bepinex_version != version:
+                            msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx updated.", f"{self.bepinex_version} -> {version}")
+                            self.setBepinVersion(version)
                         else:
                             msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Updated", f"BepInEx was up to date.", f"{version} Reinstalled ")
                     else:
                         msg = self.make_popup_window(parent, QMessageBox.Information, "BepInEx Installed", f"BepInEx {version} Installed", "")
-                        self.config.config['bepinex_version'] = version
-                        self.config.save_config()
+                        self.setBepinVersion(version)
                 else:
                     # Could not install BepInEx, Permissions maybe?
                     msg = self.make_popup_window(parent, QMessageBox.Critical, "BepInEx Updater Error", "BepInEx Failed during installation.", "Failed while extracting BepInEx package.\nCheck that the game folder is correct and you have permissions.")
@@ -36,6 +40,22 @@ class BepinexUpdater:
             msg = self.make_popup_window(parent, QMessageBox.Critical, "BepInEx Updater Error", "Failed to connect to the Github API", "Please check that you have internet and try again.")
         msg.exec()
 
+    def setBepinVersion(self, version):
+        self.bepinex_version = version
+        try:
+            with open(os.path.join(self.config['bepinex_directory'], "bepinex_version"), "w") as ver_file:
+                ver_file.write(self.bepinex_version)
+        except:
+            self.display_error("[ERROR] failed to write version string, this isnt critical but its weired that this happend.")
+            
+    def refreshBepinVersion(self):
+        try:
+            with open(os.path.join(self.config['bepinex_directory'], "bepinex_version")) as ver_file:
+                for line in ver_file:
+                    return line.strip()
+        except:
+            print("[WARN] No BepInEx version file. Moving along without it.")
+            return "Not Installed"
 
     def getLatestURL(self, url):
         try:

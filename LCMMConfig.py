@@ -19,11 +19,9 @@ class Config:
             self.parser.read(self.config_path)
             self.set_game_directory(self.parser['General']["game_directory"])
             self.config["darkmode"] = self.parser['General']["darkmode"]
-            self.config["bepinex_version"] = self.parser['Data']["bepinex_version"]
         except:
             print("[INFO] No valid config, creating one.")
             self.config["darkmode"] = "True"
-            self.config["bepinex_version"] = "Not Installed"
             self.set_game_directory(self.get_platform_defaults())
             self.save_config()
 
@@ -31,7 +29,6 @@ class Config:
         try:
             self.parser['General']["game_directory"] = self.config["game_directory"]
             self.parser['General']["darkmode"] = self.config["darkmode"]
-            self.parser['Data']["bepinex_version"] = self.config["bepinex_version"]
             with open(self.config_path, 'w') as configfile:
                 self.parser.write(configfile)
             print("[INFO] Saved config")

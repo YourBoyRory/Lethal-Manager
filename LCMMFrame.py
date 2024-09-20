@@ -9,16 +9,19 @@ from ModHandler import ModHandler
 from BepinexUpdater import BepinexUpdater
 from LCMMConfig import Config
 from Theme import Theme
+from pathlib import Path
 import platform
 import subprocess
 import os.path
 import traceback
+import webbrowser
 
 class DragDropWindow(QMainWindow):
 
     config = Config()
     ver_str = "v2.0.0 - Beta"
     modhandler = ModHandler(config.config)
+    bepinUpdater = BepinexUpdater(config.config)
     styleSheets = Theme()
     cache_selection = None
 
@@ -35,7 +38,7 @@ class DragDropWindow(QMainWindow):
         #Lable
         self.display_mod_icon = self.make_label("display_mod_icon", Qt.AlignTop, 0)
         #self.display_mod_icon.setFixedWidth(300)
-        #self.display_mod_icon.setFixedHeight(350)
+        self.display_mod_icon.setFixedHeight(325)
         self.layout.addWidget(self.display_mod_icon,1,1,5,1, Qt.AlignRight)
         self.display_mod_icon.setContentsMargins(25, 25, 25, 25)
         self.display_mod_name=self.make_label("display_mod_name", Qt.AlignLeft, 0)
@@ -87,6 +90,7 @@ class DragDropWindow(QMainWindow):
         # Mod List
         self.listwidget = QListWidget()
         self.listwidget.clicked.connect(self.list_clicked)
+        self.listwidget.setSelectionMode(3)
         self.listwidget.setMouseTracking(True)
         self.listwidget.setIconSize(QSize(50, 50))
         self.listwidget.setMaximumWidth(500)
@@ -117,7 +121,7 @@ class DragDropWindow(QMainWindow):
         self.file_menu.addAction(self.uninstall_menubar_action)
         self.file_menu.addAction(self.toggle_menubar_action)
         self.file_menu.addAction(self.refresh_menubar_action)
-        #self.install_menubar_action.triggered.connect(self.new_file)
+        self.install_menubar_action.triggered.connect(self.install_from_file)
         self.uninstall_menubar_action.triggered.connect(self.uninstall_mod)
         self.uninstall_menubar_action.setEnabled(False)
         self.toggle_menubar_action.triggered.connect(self.toggle_mod_status)
@@ -148,7 +152,9 @@ class DragDropWindow(QMainWindow):
         self.help_menu.addAction(self.downloadmods_menubar_action)
         self.help_menu.addAction(self.troubleshoot_menubar_action)
         self.help_menu.addAction(self.about_menubar_action)
-        self.help_menu.triggered.connect(self.showAbout)
+        self.downloadmods_menubar_action.triggered.connect(self.openBrowser)
+        self.troubleshoot_menubar_action.triggered.connect(self.showHelp)
+        self.about_menubar_action.triggered.connect(self.showAbout)
 
         #display window
         self.setupWindow()
@@ -157,6 +163,12 @@ class DragDropWindow(QMainWindow):
         # Post window set up
         self.verify_files()
         self.refresh_list()
+
+    def install_from_file(self):
+        fileName, dump = QFileDialog.getOpenFileNames(self, "Install Thunderstore Package", os.path.join(Path.home(), 'Downloads') , "Thunderstore Package (*.zip);; All Files (*)")
+        if fileName:
+            print(fileName)
+            self.install_mod(fileName)
 
     def setTheme(self):
         if platform.system() == "Windows":
@@ -215,15 +227,18 @@ class DragDropWindow(QMainWindow):
 
     def showAbout(self):
         msg = self.make_popup_window(None, "About Lethal Manager",
-        f"Lethal Manager {self.ver_str}\nhttps://github.com/YourBoyRory/Lethal-Manager",
-        f"BepInEx Version: {self.config.config['bepinex_version']}\nMods Installed: {len(self.modhandler.mod_list)}\n\nSpecial Thanks!\ndeductiveyeti0 - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
+        f"Lethal Manager {self.ver_str}\nYourBoyRory\nhttps://github.com/YourBoyRory/Lethal-Manager",
+        f"BepInEx Version: {self.bepinUpdater.bepinex_version}\nMods Installed: {len(self.modhandler.mod_list)}\n\n\nSpecial Thanks!\ndeductiveyeti0 - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
         msg.exec()
 
     def showHelp(self):
-        pass
+        msg = self.make_popup_window(None, "Troubleshooting",
+        "Im gonna work on this later\n\nOn Linux you need to run this command:",
+        "WINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%")
+        msg.exec()
 
     def openBrowser(self):
-        pass
+        webbrowser.open('https://thunderstore.io/c/lethal-company/')
 
     def setupWindow(self):
         self.setWindowTitle(f"Lethal Manager")
@@ -256,6 +271,7 @@ class DragDropWindow(QMainWindow):
 
     def list_clicked(self, qmodelindex):
         if self.listwidget.currentItem().text() is not None:
+            print(f"[Info] Showing {self.listwidget.currentItem().text()} mod data")
             self.refresh_mod_data()
 
     def set_game_directory(self):
@@ -316,6 +332,8 @@ class DragDropWindow(QMainWindow):
             for mod in self.modhandler.mod_list:
                 icon = QIcon(os.path.join(self.config.config["lmdata_directory"], mod, "icon.png"))
                 self.listwidget.addItem(QListWidgetItem(icon, mod))
+                if not self.modhandler.is_enabled(mod):
+                    self.listwidget.findItems(mod, Qt.MatchExactly)[0].setForeground(Qt.darkGray)
 
     def refresh_mod_data(self):
 
@@ -404,18 +422,30 @@ class DragDropWindow(QMainWindow):
 
     def install_mod(self, file_paths):
         installed = [0]
+        updates_occured = False
+        updated = ""
+        fails_occured = False
+        failed = ""
         for package in file_paths:
-            modname, preformed_update = self.modhandler.install(package)
+            modname, old_version = self.modhandler.install(package)
             if modname == None:
-                msg = self.make_popup_window(QMessageBox.Critical, f"Failed to install mod", "The provided package failed to install!","The mod manifest may be missing or malformed. Contact the mod creator and notify me on Github.\n\n https://github.com/YourBoyRory")
-                msg.exec()
-            elif preformed_update:
-                    msg = self.make_popup_window(QMessageBox.Information, "Mod Updated", f"{modname} updated to {self.modhandler.mod_list[modname]["version_number"]}", "")
-                    msg.exec()
+                failed += f"\n        {os.path.basename(package)}"
+                fails_occured = True
+            elif old_version:
+                    if old_version == self.modhandler.mod_list[modname]["version_number"]:
+                        updated += f"        {modname}: {self.modhandler.mod_list[modname]["version_number"]} Reinstalled\n"
+                    else:
+                        updated += f"        {modname}: {old_version} -> {self.modhandler.mod_list[modname]["version_number"]}\n"
+                    updates_occured = True
             else:
                 temp = [modname]
                 installed += temp
-
+        if fails_occured:
+                msg = self.make_popup_window(QMessageBox.Critical, f"Failed to install mods", f"The following packages failed to install!{failed}", "The package manifest may be missing or malformed.")
+                msg.exec()
+        if updates_occured:
+                msg = self.make_popup_window(QMessageBox.Information, "Mods Updated", f"The following mods have been updated or reinstalled:", f"{updated}")
+                msg.exec()
         for package in installed:
             print(installed)
             if package != 0:
@@ -431,14 +461,14 @@ class DragDropWindow(QMainWindow):
             display_disabled += "\n        " + name
         if missing_list and disabled_list:
             print(f"[INFO] Dependencies Needed for {modname}.")
-            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies missing for {modname}", f"The following mods need installed:{display_missing}",f"The following mods need enabled:{display_disabled}")
+            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies missing for {modname}", f"The following mods need installed for {modname}:{display_missing}",f"The following mods need enabled:{display_disabled}")
             msg.exec()
         elif missing_list:
             print(f"[INFO] Dependencies Needed for {modname}.")
-            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies missing for {modname}", f"The following mods need installed:{display_missing}","")
+            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies missing for {modname}", f"The following mods need installed for {modname}:{display_missing}","")
             msg.exec()
         elif disabled_list:
-            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies disabled for {modname}", f"The following mods need enabled:{display_disabled}", "")
+            msg = self.make_popup_window(QMessageBox.Warning, f"Dependencies disabled for {modname}", f"The following mods need enabled for{modname}:{display_disabled}", "")
             msg.exec()
         else:
             print(f"[INFO] No dependencies needed for {modname}.")
@@ -492,25 +522,52 @@ class DragDropWindow(QMainWindow):
             selection = msg.exec()
             if selection is not QMessageBox.YesRole:
                 return
-        BepinexUpdater(self, self.config)
+        self.bepinUpdater.preformUpdate(self)
         self.verify_files()
 
     def uninstall_mod(self):
-        if self.listwidget.currentItem() is not None:
-            self.modhandler.uninstall(self.listwidget.currentItem().text())
-            self.refresh_list()
-            self.refresh_mod_data()
+        if self.dependency_issue():
+            return
+        for item in self.listwidget.selectedItems():
+            self.modhandler.uninstall(item.text())
+        self.refresh_list()
+        self.refresh_mod_data()
 
     def disable_mod(self):
-        if self.listwidget.currentItem() is not None:
+        if self.dependency_issue():
+            return
+        for item in self.listwidget.selectedItems():
             self.cache_selection=self.listwidget.currentRow()
-            self.modhandler.disable(self.listwidget.currentItem().text())
-            self.partial_refresh()
+            self.modhandler.disable(item.text())
+        self.partial_refresh()
 
     def enable_mod(self):
-        if self.listwidget.currentItem() is not None:
-            self.modhandler.enable(self.listwidget.currentItem().text())
-            self.partial_refresh()
+        enabled = [0]
+        for item in self.listwidget.selectedItems():
+            self.cache_selection=self.listwidget.currentRow()
+            self.modhandler.enable(item.text())
+            temp = [modname]
+            installed += temp
+        self.partial_refresh()
+
+    def dependency_issue(self):
+        dependency_issue = False
+        dependency_issue_list = ""
+        for item in self.listwidget.selectedItems():
+            for mod in self.listwidget.findItems('*', Qt.MatchWildcard):
+                if self.modhandler.is_enabled(mod.text()) and mod not in self.listwidget.selectedItems() and self.modhandler.check_if_dependent(item.text(), mod.text()):
+                    dependency_issue = True
+                    dependency_issue_list += f"\n        {mod.text()} depends on {item.text()}"
+        if dependency_issue:
+            print(f"[INFO] Disbaling selected mods breaks these mods:{dependency_issue_list}")
+            msg = self.make_popup_window(QMessageBox.Warning, f"Confirm Dependency Issue", f"The the operation will break dependency for the following mods:{dependency_issue_list}","Would you like to ignore these issues?")
+            msg.addButton(QPushButton('Ignore'), QMessageBox.YesRole)
+            msg.addButton(QPushButton('Cancel'), QMessageBox.RejectRole)
+            selection = msg.exec()
+            if selection != 0:
+                return True
+        return False
+                
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
