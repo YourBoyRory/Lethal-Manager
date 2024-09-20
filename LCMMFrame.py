@@ -228,12 +228,12 @@ class DragDropWindow(QMainWindow):
     def showAbout(self):
         msg = self.make_popup_window(None, "About Lethal Manager",
         f"Lethal Manager {self.ver_str}\nYourBoyRory\nhttps://github.com/YourBoyRory/Lethal-Manager",
-        f"BepInEx Version: {self.bepinUpdater.bepinex_version}\nMods Installed: {len(self.modhandler.mod_list)}\n\n\nSpecial Thanks!\ndeductiveyeti0 - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
+        f"BepInEx Version: {self.bepinUpdater.bepinex_version}\nMods Installed: {len(self.modhandler.mod_list)}\n\n\nSpecial Thanks!\Hemoglobin - Windows Beta Tester\nAntonio - Windows Beta Tester\nDRBatt - Linux Beta Tester")
         msg.exec()
 
     def showHelp(self):
         msg = self.make_popup_window(None, "Troubleshooting",
-        "Im gonna work on this later\n\nOn Linux you need to run this command:",
+        "If your mods are not loading make sure the program is pointing that the gamesinstall directroy.\n\nIf you have confirmed the games install directory make sure BepInEx is up to dateby installing in through \n[Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:",
         "WINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%")
         msg.exec()
 
@@ -472,7 +472,7 @@ class DragDropWindow(QMainWindow):
             msg.exec()
         else:
             print(f"[INFO] No dependencies needed for {modname}.")
-        self.refresh_list()
+        #self.refresh_list() # why is this needed?
 
     def make_popup_window(self, mtype, title, top_text, bottom_text):
         msg = QMessageBox(self)
@@ -524,6 +524,8 @@ class DragDropWindow(QMainWindow):
                 return
         self.bepinUpdater.preformUpdate(self)
         self.verify_files()
+        if self.bepinUpdater.bepinex_version != "Not Installed":
+            self.update_menubar_action.setText("Update BepInEx")
 
     def uninstall_mod(self):
         if self.dependency_issue():
@@ -546,9 +548,13 @@ class DragDropWindow(QMainWindow):
         for item in self.listwidget.selectedItems():
             self.cache_selection=self.listwidget.currentRow()
             self.modhandler.enable(item.text())
-            temp = [modname]
-            installed += temp
+            temp = [item.text()]
+            enabled += temp
         self.partial_refresh()
+        for package in enabled:
+            print(enabled)
+            if package != 0:
+                self.check_for_dependencies(package)
 
     def dependency_issue(self):
         dependency_issue = False
