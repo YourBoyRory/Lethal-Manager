@@ -233,7 +233,7 @@ class DragDropWindow(QMainWindow):
 
     def showHelp(self):
         msg = self.make_popup_window(None, "Troubleshooting",
-        "If your mods are not loading make sure the program is pointing that the gamesinstall directroy.\n\nIf you have confirmed the games install directory make sure BepInEx is up to dateby installing in through \n[Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:",
+        "If your mods are not loading make sure the program is pointing that the game's install directory.\n\nIf you have confirmed the games install directory make sure BepInEx is up to date by installing in through \n[Options] > [Update BepInEx] \n\nIf you are on a unix based platform (Mac or Linux)\nyou will need to add the following line to your games launch options:",
         "WINEDLLOVERRIDES=\"winhttp.dll=n,b\" %command%")
         msg.exec()
 
