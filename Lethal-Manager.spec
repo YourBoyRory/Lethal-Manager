@@ -5,7 +5,7 @@ a = Analysis(
     ['LCMMFrame.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('Lethal-Icon-small.png', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['assets\\Lethal-Manager-Icon.ico'],
 )

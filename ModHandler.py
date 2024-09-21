@@ -19,7 +19,8 @@ class ModHandler:
             with zipfile.ZipFile(package, 'r') as package:
                 package_info=json.loads(package.read("manifest.json"))
                 if self.is_installed(package_info["name"]):
-                    print(f"[INFO] {package_info["name"]} already installed. updating...")
+                    package_name = package_info["name"]
+                    print(f"[INFO] {package_name} already installed. updating...")
                     old_version = self.mod_list[package_info["name"]]["version_number"]
                     self.uninstall(package_info["name"])
                 for file in package.namelist():
@@ -30,7 +31,8 @@ class ModHandler:
                 with open(path.join(self.config["lmdata_directory"], package_info["name"], "filelist.txt"), 'w') as change_file:
                     for files in package.namelist():
                         change_file.write(f"{files}\n")
-            print(f"[INFO] {package_info["name"]} Installed.")
+            package_name = package_info["name"]
+            print(f"[INFO] {package_name} Installed.")
             self.compile_modlist()
             return package_info["name"], old_version
         except:

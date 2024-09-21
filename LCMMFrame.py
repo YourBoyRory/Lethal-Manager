@@ -243,6 +243,7 @@ class DragDropWindow(QMainWindow):
         webbrowser.open('https://thunderstore.io/c/lethal-company/')
 
     def setupWindow(self):
+        self.setWindowIcon(QIcon(self.resource_path('Lethal-Icon-small.png')))
         self.setWindowTitle(f"Lethal Manager")
         self.setAcceptDrops(True)
         self.resize(1000, 700)
@@ -375,7 +376,8 @@ class DragDropWindow(QMainWindow):
                 self.toggle_menubar_action.setText("Enable")
             self.display_mod_status.setVisible(True)
             self.display_mod_uninstall.setVisible(True)
-            self.display_mod_website.setText(f"<a href=\"{self.modhandler.mod_list[modname]["website_url"]}\">{self.modhandler.mod_list[modname]["website_url"]}</a>")
+            website = self.modhandler.mod_list[modname]["website_url"]
+            self.display_mod_website.setText(f"<a href=\"{}\">{website}</a>")
             self.display_mod_website.setVisible(True)
             self.display_mod_description.setText(self.modhandler.mod_list[modname]["description"])
             self.display_mod_description.setVisible(True)
@@ -436,10 +438,11 @@ class DragDropWindow(QMainWindow):
                 failed += f"\n        {os.path.basename(package)}"
                 fails_occured = True
             elif old_version:
-                    if old_version == self.modhandler.mod_list[modname]["version_number"]:
-                        updated += f"        {modname}: {self.modhandler.mod_list[modname]["version_number"]} Reinstalled\n"
+                    new_version = self.modhandler.mod_list[modname]["version_number"]
+                    if old_version == new_version:
+                        updated += f"        {modname}: {new_version} Reinstalled\n"
                     else:
-                        updated += f"        {modname}: {old_version} -> {self.modhandler.mod_list[modname]["version_number"]}\n"
+                        updated += f"        {modname}: {old_version} -> {new_version}\n"
                     updates_occured = True
             else:
                 temp = [modname]
@@ -454,6 +457,7 @@ class DragDropWindow(QMainWindow):
             print(installed)
             if package != 0:
                 self.check_for_dependencies(package)
+        self.partial_refresh()
 
     def check_for_dependencies(self, modname):
         display_missing = ""
@@ -579,7 +583,13 @@ class DragDropWindow(QMainWindow):
             if selection != 0:
                 return True
         return False
-                
+            
+    def resource_path(self, relative_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
