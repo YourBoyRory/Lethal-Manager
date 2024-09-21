@@ -20,7 +20,7 @@ import requests
 class DragDropWindow(QMainWindow):
 
     config = Config()
-    ver_str = "v2.0.1"
+    ver_str = "v2.0.2"
     modhandler = ModHandler(config.config)
     bepinUpdater = BepinexUpdater(config.config)
     styleSheets = Theme()
