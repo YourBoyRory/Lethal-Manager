@@ -19,7 +19,7 @@ import webbrowser
 class DragDropWindow(QMainWindow):
 
     config = Config()
-    ver_str = "v2.0.0 - Beta"
+    ver_str = "v2.0.0"
     modhandler = ModHandler(config.config)
     bepinUpdater = BepinexUpdater(config.config)
     styleSheets = Theme()
