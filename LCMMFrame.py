@@ -377,7 +377,7 @@ class DragDropWindow(QMainWindow):
             self.display_mod_status.setVisible(True)
             self.display_mod_uninstall.setVisible(True)
             website = self.modhandler.mod_list[modname]["website_url"]
-            self.display_mod_website.setText(f"<a href=\"{}\">{website}</a>")
+            self.display_mod_website.setText(f"<a href=\"{website}\">{website}</a>")
             self.display_mod_website.setVisible(True)
             self.display_mod_description.setText(self.modhandler.mod_list[modname]["description"])
             self.display_mod_description.setVisible(True)
