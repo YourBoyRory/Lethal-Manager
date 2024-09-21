@@ -15,11 +15,12 @@ import subprocess
 import os.path
 import traceback
 import webbrowser
+import requests
 
 class DragDropWindow(QMainWindow):
 
     config = Config()
-    ver_str = "v2.0.0"
+    ver_str = "v2.0.1"
     modhandler = ModHandler(config.config)
     bepinUpdater = BepinexUpdater(config.config)
     styleSheets = Theme()
@@ -122,6 +123,7 @@ class DragDropWindow(QMainWindow):
         self.file_menu.addAction(self.toggle_menubar_action)
         self.file_menu.addAction(self.refresh_menubar_action)
         self.install_menubar_action.triggered.connect(self.install_from_file)
+        self.install_menubar_action.setEnabled(False)
         self.uninstall_menubar_action.triggered.connect(self.uninstall_mod)
         self.uninstall_menubar_action.setEnabled(False)
         self.toggle_menubar_action.triggered.connect(self.toggle_mod_status)
@@ -265,9 +267,11 @@ class DragDropWindow(QMainWindow):
 
     def dropEvent(self, event: QDropEvent):
         # Get the dropped files
-        urls = event.mimeData().urls()
-        file_paths = [url.toLocalFile() for url in urls]
-        self.install_mod(file_paths)
+        self.verify_files()
+        if self.filesVerified:
+            urls = event.mimeData().urls()
+            file_paths = [url.toLocalFile() for url in urls]
+            self.install_mod(file_paths)
 
     def list_clicked(self, qmodelindex):
         if self.listwidget.currentItem().text() is not None:
@@ -493,11 +497,13 @@ class DragDropWindow(QMainWindow):
         self.filesVerified = True
         game_found, loader_found = self.config.verify_files()
         self.update_menubar_action.setEnabled(True)
+        self.install_menubar_action.setEnabled(True)
         self.opendir_menubar_action.setEnabled(True)
         if not game_found:
             self.filesVerified = False
             self.opendir_menubar_action.setEnabled(False)
             self.update_menubar_action.setEnabled(False)
+            self.install_menubar_action.setEnabled(False)
             msg = self.make_popup_window(QMessageBox.Warning, "Lethal Company Not Found", "We where unabled to locate the games directory automatically. Please provide the path to your lethal company folder", "")
             msg.addButton(QPushButton('Set Directory'), QMessageBox.YesRole)
             msg.addButton(QPushButton('Later'), QMessageBox.NoRole)
